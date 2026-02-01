@@ -15,6 +15,7 @@ import {
   CreditCard,
   ShieldAlert,
   Hotel,
+  Trophy,
 } from "lucide-react";
 
 import { useQuery } from "react-query";
@@ -143,6 +144,16 @@ const Header = () => {
 
                       {isHotelOwner && (
                         <Link
+                          className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                          to="/ranking"
+                        >
+                          <Trophy className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                          Rankings
+                        </Link>
+                      )}
+
+                      {isHotelOwner && (
+                        <Link
                           className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 transition-all duration-200 group"
                           to="/subscription"
                         >
@@ -194,22 +205,26 @@ const Header = () => {
                       )}
 
                       {/* API Documentation Link */}
-                      <Link
-                        className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                        to="/api-docs"
-                      >
-                        <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                        API Docs
-                      </Link>
+                      {!isHotelOwner && (
+                        <Link
+                          className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                          to="/api-docs"
+                        >
+                          <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                          API Docs
+                        </Link>
+                      )}
 
                       {/* API Status Link */}
-                      <Link
-                        className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                        to="/api-status"
-                      >
-                        <Activity className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                        API Status
-                      </Link>
+                      {!isHotelOwner && (
+                        <Link
+                          className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                          to="/api-status"
+                        >
+                          <Activity className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                          API Status
+                        </Link>
+                      )}
 
                       <SignOutButton />
                     </>

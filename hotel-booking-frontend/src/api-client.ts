@@ -213,12 +213,7 @@ export const fetchBusinessInsightsForecast = async () => {
   return response.data;
 };
 
-export const fetchBusinessInsightsPerformance = async () => {
-  const response = await axiosInstance.get(
-    "/api/business-insights/performance"
-  );
-  return response.data;
-};
+
 
 export const fetchSubscriptionStatus = async (): Promise<SubscriptionType | null> => {
   const response = await axiosInstance.get("/api/subscriptions/status");
@@ -299,5 +294,15 @@ export const fetchAllHotels = async () => {
 };
 export const fetchAllSubscriptions = async () => {
   const response = await axiosInstance.get("/api/admin/subscriptions");
+  return response.data;
+};
+
+export const fetchHotelRankings = async () => {
+  const response = await axiosInstance.get("/api/rankings/hotels");
+  return response.data;
+};
+
+export const fetchOwnerRankings = async () => {
+  const response = await axiosInstance.get("/api/rankings/owners");
   return response.data;
 };

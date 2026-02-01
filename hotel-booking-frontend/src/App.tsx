@@ -26,6 +26,7 @@ import Subscription from "./pages/Subscription";
 import MyGuests from "./pages/MyGuests";
 import AdminDashboard from "./pages/AdminDashboard";
 import VerificationPage from "./pages/VerificationPage";
+import Ranking from "./pages/Ranking";
 
 const App = () => {
   const { isLoggedIn } = useAppContext();
@@ -168,6 +169,14 @@ const App = () => {
           element={
             <Layout>
               {isLoggedIn ? <AdminDashboard /> : <Navigate to="/sign-in" />}
+            </Layout>
+          }
+        />
+        <Route
+          path="/ranking"
+          element={
+            <Layout>
+              {isLoggedIn ? <Ranking /> : <Navigate to="/sign-in" />}
             </Layout>
           }
         />

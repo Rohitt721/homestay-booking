@@ -5,7 +5,6 @@ import { useQueryWithLoading } from "../hooks/useLoadingHooks";
 import {
   fetchBusinessInsightsDashboard,
   fetchBusinessInsightsForecast,
-  fetchBusinessInsightsPerformance,
 } from "../api-client";
 import {
   BarChart,
@@ -30,12 +29,8 @@ import {
   Building,
   Calendar,
   DollarSign,
-  Activity,
   BarChart3,
   RefreshCw,
-  Server,
-  Clock,
-  AlertCircle,
 } from "lucide-react";
 
 interface AnalyticsData {
@@ -88,35 +83,7 @@ interface ForecastData {
   lastUpdated: string;
 }
 
-interface PerformanceData {
-  system: {
-    memory: {
-      used: number;
-      total: number;
-      percentage: number;
-    };
-    cpu: {
-      user: number;
-      system: number;
-    };
-    uptime: number;
-  };
-  database: {
-    collections: number;
-    totalHotels: number;
-    totalBookings: number;
-    totalRevenue: number;
-  };
-  application: {
-    avgResponseTime: number;
-    requestsPerMinute: number;
-    errorRate: number;
-    uptime: string;
-    todayBookings: number;
-    thisWeekBookings: number;
-  };
-  lastUpdated: string;
-}
+
 
 const AnalyticsDashboard = () => {
   const { user } = useAppContext();
@@ -134,7 +101,7 @@ const AnalyticsDashboard = () => {
   }, [user, navigate]);
 
   const [activeTab, setActiveTab] = useState<
-    "overview" | "forecast" | "performance"
+    "overview" | "forecast"
   >("overview");
 
   const {
@@ -170,19 +137,7 @@ const AnalyticsDashboard = () => {
   // Debug logging
   console.log("Frontend Forecast Data:", forecastData);
 
-  const { data: performanceData } = useQueryWithLoading<PerformanceData>(
-    "business-insights-performance",
-    fetchBusinessInsightsPerformance,
-    {
-      refetchInterval: false, // Disable auto-refresh to avoid blocking
-      retry: 3,
-      retryDelay: 1000,
-      loadingMessage: "Loading performance data...",
-    }
-  );
 
-  // Debug logging
-  console.log("Frontend Performance Data:", performanceData);
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
@@ -255,18 +210,16 @@ const AnalyticsDashboard = () => {
               {[
                 { id: "overview", label: "Overview", icon: BarChart3 },
                 { id: "forecast", label: "Forecasting", icon: TrendingUp },
-                { id: "performance", label: "Performance", icon: Activity },
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === tab.id
-                        ? "border-blue-500 text-blue-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
+                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {tab.label}
@@ -289,7 +242,7 @@ const AnalyticsDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">
-                      Total Hotels
+                      My Hotels
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
                       {formatNumber(analyticsData.overview.totalHotels)}
@@ -305,7 +258,7 @@ const AnalyticsDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">
-                      Total Users
+                      Total Guests
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
                       {formatNumber(analyticsData.overview.totalUsers)}
@@ -349,11 +302,10 @@ const AnalyticsDashboard = () => {
                         <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
                       )}
                       <span
-                        className={`text-sm ${
-                          analyticsData.overview.revenueGrowth >= 0
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
+                        className={`text-sm ${analyticsData.overview.revenueGrowth >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                          }`}
                       >
                         {analyticsData.overview.revenueGrowth.toFixed(1)}%
                       </span>
@@ -541,11 +493,10 @@ const AnalyticsDashboard = () => {
                     <TrendingDown className="w-6 h-6 text-red-500 mr-2" />
                   )}
                   <span
-                    className={`text-2xl font-bold ${
-                      forecastData.seasonalGrowth >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
+                    className={`text-2xl font-bold ${forecastData.seasonalGrowth >= 0
+                      ? "text-green-600"
+                      : "text-red-600"
+                      }`}
                   >
                     {forecastData.seasonalGrowth.toFixed(1)}%
                   </span>
@@ -650,155 +601,7 @@ const AnalyticsDashboard = () => {
         )}
 
         {/* Performance Tab */}
-        {activeTab === "performance" && performanceData && (
-          <div className="w-full space-y-8">
-            {/* System Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Activity className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      Memory Usage
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {performanceData.system.memory.percentage}%
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {performanceData.system.memory.used}MB /{" "}
-                      {performanceData.system.memory.total}MB
-                    </p>
-                  </div>
-                </div>
-              </div>
 
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Server className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Uptime</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {performanceData.application.uptime}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {Math.round(performanceData.system.uptime / 3600)}h{" "}
-                      {Math.round((performanceData.system.uptime % 3600) / 60)}m
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Clock className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      Response Time
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {performanceData.application.avgResponseTime}ms
-                    </p>
-                    <p className="text-sm text-gray-500">Average</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <AlertCircle className="w-6 h-6 text-yellow-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      Error Rate
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {(performanceData.application.errorRate * 100).toFixed(2)}
-                      %
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Requests per minute:{" "}
-                      {performanceData.application.requestsPerMinute}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Database Metrics */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Database Overview
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Collections</span>
-                    <span className="font-semibold">
-                      {performanceData.database.collections}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total Hotels</span>
-                    <span className="font-semibold">
-                      {performanceData.database.totalHotels}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total Bookings</span>
-                    <span className="font-semibold">
-                      {performanceData.database.totalBookings}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total Revenue</span>
-                    <span className="font-semibold">
-                      {formatCurrency(performanceData.database.totalRevenue)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Recent Activity
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Today's Bookings</span>
-                    <span className="font-semibold">
-                      {performanceData.application.todayBookings}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">This Week's Bookings</span>
-                    <span className="font-semibold">
-                      {performanceData.application.thisWeekBookings}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">CPU Usage (User)</span>
-                    <span className="font-semibold">
-                      {Math.round(performanceData.system.cpu.user / 1000)}ms
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">CPU Usage (System)</span>
-                    <span className="font-semibold">
-                      {Math.round(performanceData.system.cpu.system / 1000)}ms
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Last Updated */}
         <div className="text-center text-gray-500 text-sm mt-8">
