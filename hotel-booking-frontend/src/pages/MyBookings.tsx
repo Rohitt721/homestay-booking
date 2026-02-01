@@ -22,10 +22,12 @@ import {
   Gem,
   ArrowRight,
   MessageSquare,
+  AlertTriangle,
 } from "lucide-react";
 import IdUploadModal from "../components/IdUploadModal";
 import ReviewModal from "../components/ReviewModal";
 import ChatModal from "../components/ChatModal";
+import ReportModal from "../components/ReportModal";
 import { useState, useMemo } from "react";
 import { Button } from "../components/ui/button";
 
@@ -44,6 +46,15 @@ const MyBookings = () => {
 
   // Chat Modal State
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+
+  // Report Modal State
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportBookingData, setReportBookingData] = useState<{
+    booking: BookingType;
+    hotelName: string;
+    hotelId: string;
+    ownerId: string;
+  } | null>(null);
   const [chatBookingData, setChatBookingData] = useState<{ id: string, hotelName: string, ownerName: string } | null>(null);
 
   const { data: hotels, isLoading, refetch } = useQueryWithLoading<HotelWithBookingsType[]>(
@@ -292,6 +303,24 @@ const MyBookings = () => {
                 >
                   View Hotel
                 </Button>
+
+                {/* Report Button - Always available */}
+                <Button
+                  variant="outline"
+                  className="flex-1 md:flex-none border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl px-6 py-5 font-bold"
+                  onClick={() => {
+                    setReportBookingData({
+                      booking: booking,
+                      hotelName: hotel.name,
+                      hotelId: hotel._id,
+                      ownerId: hotel.userId,
+                    });
+                    setIsReportModalOpen(true);
+                  }}
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Report
+                </Button>
               </div>
             </div>
           </div>
@@ -447,6 +476,20 @@ const MyBookings = () => {
         receiverName={chatBookingData?.ownerName || ""}
         userRole="user"
       />
+
+      {reportBookingData && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => {
+            setIsReportModalOpen(false);
+            setReportBookingData(null);
+          }}
+          booking={reportBookingData.booking}
+          hotelName={reportBookingData.hotelName}
+          hotelId={reportBookingData.hotelId}
+          ownerId={reportBookingData.ownerId}
+        />
+      )}
     </div>
   );
 };

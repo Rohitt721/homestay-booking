@@ -26,7 +26,10 @@ import {
     Filter,
     Clock,
     MoreVertical,
-    Download
+    Download,
+    Flag,
+    Eye,
+    Image as ImageIcon,
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -490,6 +493,290 @@ const VerificationsSection = () => {
     );
 };
 
+// Reports Section Component
+const ReportsSection = () => {
+    const { showToast } = useAppContext();
+    const queryClient = useQueryClient();
+    const [filterStatus, setFilterStatus] = useState<"ALL" | "Open" | "In Review" | "Resolved">("ALL");
+    const [selectedReport, setSelectedReport] = useState<any | null>(null);
+
+    const { data: reports, isLoading } = useQuery("allReports", apiClient.fetchAllReports);
+
+    const { mutate: updateStatus, isLoading: isUpdating } = useMutation(
+        ({ reportId, status }: { reportId: string, status: "Open" | "In Review" | "Resolved" }) =>
+            apiClient.updateReportStatus(reportId, status),
+        {
+            onSuccess: () => {
+                showToast({ title: "Status Updated", description: "Report status updated successfully", type: "SUCCESS" });
+                queryClient.invalidateQueries("allReports");
+            },
+            onError: (error: any) => {
+                showToast({ title: "Update Failed", description: error.message, type: "ERROR" });
+            }
+        }
+    );
+
+    const filteredReports = reports?.filter((report: any) =>
+        filterStatus === "ALL" || report.status === filterStatus
+    ) || [];
+
+    const openCount = reports?.filter((r: any) => r.status === "Open").length || 0;
+    const inReviewCount = reports?.filter((r: any) => r.status === "In Review").length || 0;
+    const resolvedCount = reports?.filter((r: any) => r.status === "Resolved").length || 0;
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "Open": return "bg-rose-500/20 text-rose-300 border-rose-500/30";
+            case "In Review": return "bg-amber-500/20 text-amber-300 border-amber-500/30";
+            case "Resolved": return "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+            default: return "bg-gray-500/20 text-gray-300 border-gray-500/30";
+        }
+    };
+
+    if (isLoading) {
+        return <div className="p-20 text-center text-gray-400 animate-pulse">Loading reports...</div>;
+    }
+
+    return (
+        <div className="space-y-8">
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+                    <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-rose-500/20 rounded-xl">
+                                <Flag className="w-6 h-6 text-rose-400" />
+                            </div>
+                            <Badge className="bg-rose-500/20 text-rose-300 border border-rose-500/30">Action Needed</Badge>
+                        </div>
+                        <h3 className="text-3xl font-black text-white mb-1">{openCount}</h3>
+                        <p className="text-sm text-gray-400 font-medium">Open Reports</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+                    <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-amber-500/20 rounded-xl">
+                                <Eye className="w-6 h-6 text-amber-400" />
+                            </div>
+                            <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30">In Progress</Badge>
+                        </div>
+                        <h3 className="text-3xl font-black text-white mb-1">{inReviewCount}</h3>
+                        <p className="text-sm text-gray-400 font-medium">Under Review</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+                    <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-emerald-500/20 rounded-xl">
+                                <CheckCircle className="w-6 h-6 text-emerald-400" />
+                            </div>
+                            <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Complete</Badge>
+                        </div>
+                        <h3 className="text-3xl font-black text-white mb-1">{resolvedCount}</h3>
+                        <p className="text-sm text-gray-400 font-medium">Resolved</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 w-fit">
+                {(['ALL', 'Open', 'In Review', 'Resolved'] as const).map((status) => (
+                    <button
+                        key={status}
+                        onClick={() => setFilterStatus(status)}
+                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
+                            ? 'bg-white text-black shadow-lg shadow-white/10'
+                            : 'bg-black/20 text-gray-400 hover:bg-white/10 hover:text-white'
+                            }`}
+                    >
+                        {status}
+                    </button>
+                ))}
+            </div>
+
+            {/* Reports Table */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-white/5">
+                        <thead className="bg-white/5">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Report</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">User</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Reason</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {filteredReports.map((report: any) => (
+                                <tr key={report._id} className="hover:bg-white/5 transition-colors">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div>
+                                            <div className="text-sm font-bold text-white">{report.hotelId?.name || 'Unknown Hotel'}</div>
+                                            <div className="text-xs text-gray-500 font-mono">#{report.bookingId?._id?.slice(-8).toUpperCase() || 'N/A'}</div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div>
+                                            <div className="text-sm font-medium text-white">{report.userId?.firstName} {report.userId?.lastName}</div>
+                                            <div className="text-xs text-gray-500">{report.userId?.email}</div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="max-w-xs">
+                                            <div className="text-sm font-medium text-white truncate">{report.reason}</div>
+                                            {report.subReason && <div className="text-xs text-gray-500 truncate">{report.subReason}</div>}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border ${getStatusColor(report.status)}`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${report.status === 'Open' ? 'bg-rose-400 animate-pulse' : report.status === 'In Review' ? 'bg-amber-400' : 'bg-emerald-400'}`}></div>
+                                            {report.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                        {new Date(report.createdAt).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10">
+                                                    <MoreVertical className="w-4 h-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-48 bg-gray-900 border border-white/10 text-white backdrop-blur-xl">
+                                                <DropdownMenuItem className="text-xs font-medium cursor-pointer focus:bg-white/10" onClick={() => setSelectedReport(report)}>
+                                                    <Eye className="w-3.5 h-3.5 mr-2 text-blue-400" /> View Details
+                                                </DropdownMenuItem>
+                                                {report.status !== "In Review" && (
+                                                    <DropdownMenuItem className="text-xs font-medium cursor-pointer focus:bg-white/10 text-amber-400" onClick={() => updateStatus({ reportId: report._id, status: "In Review" })}>
+                                                        <Eye className="w-3.5 h-3.5 mr-2" /> Mark In Review
+                                                    </DropdownMenuItem>
+                                                )}
+                                                {report.status !== "Resolved" && (
+                                                    <DropdownMenuItem className="text-xs font-medium cursor-pointer focus:bg-white/10 text-emerald-400" onClick={() => updateStatus({ reportId: report._id, status: "Resolved" })}>
+                                                        <CheckCircle className="w-3.5 h-3.5 mr-2" /> Mark Resolved
+                                                    </DropdownMenuItem>
+                                                )}
+                                                {report.status !== "Open" && (
+                                                    <DropdownMenuItem className="text-xs font-medium cursor-pointer focus:bg-white/10 text-rose-400" onClick={() => updateStatus({ reportId: report._id, status: "Open" })}>
+                                                        <Flag className="w-3.5 h-3.5 mr-2" /> Reopen
+                                                    </DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {filteredReports.length === 0 && (
+                    <div className="p-20 text-center">
+                        <Flag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-white">No reports found</h3>
+                        <p className="text-gray-400 mt-2">No reports match the current filter.</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Report Detail Modal */}
+            {selectedReport && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-[#0f172a] border border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto">
+                        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-rose-600/20 to-orange-600/20 pointer-events-none"></div>
+                        <div className="p-8 relative">
+                            <button
+                                onClick={() => setSelectedReport(null)}
+                                className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/5"
+                            >
+                                <XCircle className="w-5 h-5" />
+                            </button>
+
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-rose-500 to-orange-600 flex items-center justify-center text-2xl font-black text-white shadow-xl">
+                                    <Flag className="w-8 h-8" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-white">Report Details</h3>
+                                    <p className="text-gray-400 font-medium">Booking #{selectedReport.bookingId?._id?.slice(-8).toUpperCase()}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Reporter</p>
+                                        <p className="text-lg font-bold text-white">{selectedReport.userId?.firstName} {selectedReport.userId?.lastName}</p>
+                                        <p className="text-xs text-gray-400">{selectedReport.userId?.email}</p>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Property Owner</p>
+                                        <p className="text-lg font-bold text-white">{selectedReport.ownerId?.firstName} {selectedReport.ownerId?.lastName}</p>
+                                        <p className="text-xs text-gray-400">{selectedReport.ownerId?.email}</p>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Reason</p>
+                                    <p className="text-white font-bold">{selectedReport.reason}</p>
+                                    {selectedReport.subReason && <p className="text-sm text-gray-400 mt-1">{selectedReport.subReason}</p>}
+                                </div>
+
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Message</p>
+                                    <p className="text-white text-sm leading-relaxed">{selectedReport.message}</p>
+                                </div>
+
+                                {selectedReport.evidenceUrls && selectedReport.evidenceUrls.length > 0 && (
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-3">Evidence ({selectedReport.evidenceUrls.length} files)</p>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {selectedReport.evidenceUrls.map((url: string, idx: number) => (
+                                                <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-xl bg-black/30 border border-white/10 overflow-hidden hover:border-blue-500/50 transition-all">
+                                                    <img src={url} alt={`Evidence ${idx + 1}`} className="w-full h-full object-cover" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3">
+                                    {selectedReport.status !== "In Review" && (
+                                        <Button
+                                            className="flex-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold h-12"
+                                            onClick={() => { updateStatus({ reportId: selectedReport._id, status: "In Review" }); setSelectedReport(null); }}
+                                            disabled={isUpdating}
+                                        >
+                                            Mark In Review
+                                        </Button>
+                                    )}
+                                    {selectedReport.status !== "Resolved" && (
+                                        <Button
+                                            className="flex-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 font-bold h-12"
+                                            onClick={() => { updateStatus({ reportId: selectedReport._id, status: "Resolved" }); setSelectedReport(null); }}
+                                            disabled={isUpdating}
+                                        >
+                                            Mark Resolved
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 const AdminDashboard = () => {
     const { data: stats } = useQuery("adminStats", apiClient.fetchAdminStats);
@@ -499,9 +786,9 @@ const AdminDashboard = () => {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get("tab") as "overview" | "verifications" | "users" | "hotels" | "subscriptions") || "overview";
+    const activeTab = (searchParams.get("tab") as "overview" | "verifications" | "users" | "hotels" | "subscriptions" | "reports") || "overview";
 
-    const setActiveTab = (tab: "overview" | "verifications" | "users" | "hotels" | "subscriptions") => {
+    const setActiveTab = (tab: "overview" | "verifications" | "users" | "hotels" | "subscriptions" | "reports") => {
         setSearchParams({ tab });
     };
 
@@ -638,6 +925,21 @@ const AdminDashboard = () => {
                                         <div className="flex-1">
                                             <h3 className="text-xl font-black text-white mb-1">Subscriptions</h3>
                                             <p className="text-sm text-gray-400">Manage plans & revenue</p>
+                                        </div>
+                                        <ChevronRight className="w-6 h-6 text-gray-500" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl hover:shadow-rose-500/20 transition-all cursor-pointer" onClick={() => setActiveTab("reports")}>
+                                <CardContent className="p-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-gradient-to-br from-rose-500 to-orange-600 p-4 rounded-2xl shadow-lg shadow-rose-500/50">
+                                            <Flag className="w-8 h-8 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-black text-white mb-1">Booking Reports</h3>
+                                            <p className="text-sm text-gray-400">Review user issues</p>
                                         </div>
                                         <ChevronRight className="w-6 h-6 text-gray-500" />
                                     </div>
@@ -815,6 +1117,21 @@ const AdminDashboard = () => {
                                 <p className="text-gray-400 mt-2">Try adjusting your search criteria.</p>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {activeTab === "reports" && (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-gradient-to-br from-rose-500 to-orange-600 p-2 rounded-xl text-white shadow-lg shadow-rose-500/50">
+                                <Flag className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-black text-white tracking-tight">Booking Reports</h2>
+                                <p className="text-sm text-gray-400 font-medium italic">Review and resolve user-submitted booking issues.</p>
+                            </div>
+                        </div>
+                        <ReportsSection />
                     </div>
                 )}
             </div>

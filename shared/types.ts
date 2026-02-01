@@ -184,3 +184,59 @@ export type PaymentIntentResponse = {
   clientSecret: string;
   totalCost: number;
 };
+
+// Report Types
+export type ReportStatus = "Open" | "In Review" | "Resolved";
+export type BookingState = "future" | "ongoing" | "past";
+
+export type ReportType = {
+  _id: string;
+  bookingId: string;
+  bookingStatus: string;
+  userId: string;
+  hotelId: string;
+  ownerId: string;
+  reason: string;
+  subReason?: string;
+  message: string;
+  evidenceUrls?: string[];
+  status: ReportStatus;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// Report Reasons - Comprehensive list based on booking state
+export const REPORT_REASONS = {
+  // Universal reasons apply to all booking states
+  UNIVERSAL: [
+    { reason: "Incorrect booking details", subReasons: ["Wrong room type"] },
+    { reason: "Payment-related issue", subReasons: ["Refund not received"] },
+    { reason: "Owner / hotel unresponsive", subReasons: ["No reply to messages", "Calls/messages ignored"] },
+    { reason: "Policy or rule violation", subReasons: ["Hidden rules", "Different rules than shown on listing"] },
+    { reason: "Suspicious or fraudulent activity", subReasons: ["Fake listing", "Asking for off-platform payment", "Fake confirmation"] },
+    { reason: "Other" },
+  ],
+  // Future booking specific - booking hasn't started yet
+  FUTURE: [
+    { reason: "Owner asking to cancel without reason" },
+    { reason: "Hotel unavailable after confirmation" },
+    { reason: "Forced upgrade / extra charges requested" },
+    { reason: "Booking confirmation mismatch" },
+  ],
+  // Ongoing booking specific - currently checked in
+  ONGOING: [
+    { reason: "Room not as described" },
+    { reason: "Cleanliness / hygiene issue" },
+    { reason: "Amenities not provided" },
+    { reason: "Staff misbehavior" },
+    { reason: "Safety or security concern" },
+    { reason: "Noise / disturbance issue" },
+  ],
+  // Past booking specific - stay completed
+  PAST: [
+    { reason: "Refund not processed" },
+    { reason: "Overcharged during stay" },
+    { reason: "Property condition mismatch" },
+    { reason: "Misleading photos or description" },
+  ],
+};

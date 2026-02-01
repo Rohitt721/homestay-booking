@@ -326,3 +326,14 @@ export const fetchOwnerChats = async () => {
   const response = await axiosInstance.get("/api/messages/owner/chats");
   return response.data;
 };
+
+// Reports API functions
+export const fetchAllReports = async () => {
+  const response = await axiosInstance.get("/api/reports");
+  return response.data;
+};
+
+export const updateReportStatus = async (reportId: string, status: "Open" | "In Review" | "Resolved") => {
+  const response = await axiosInstance.put(`/api/reports/${reportId}/status`, { status });
+  return response.data;
+};
