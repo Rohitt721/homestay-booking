@@ -154,30 +154,35 @@ router.get("/dashboard", verifyToken, async (req: Request, res: Response) => {
       },
     ]);
 
-    // Booking trends
-    const bookingDates = myBookings.reduce((acc: any, booking: any) => {
-      if (booking.createdAt) {
-        const dateObj = new Date(booking.createdAt);
-        const dateKey = dateObj.toISOString().split("T")[0];
-        if (acc[dateKey]) {
-          acc[dateKey]++;
-        } else {
-          acc[dateKey] = 1;
-        }
-      }
-      return acc;
-    }, {});
-
-    let dailyBookings = Object.entries(bookingDates)
-      .map(([date, count]) => ({
-        date,
-        bookings: count as number,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    if (dailyBookings.length > 7) {
-      dailyBookings = dailyBookings.slice(-7);
+    // Booking trends - Last 30 days daily
+    const dailyData = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split("T")[0];
+      const count = myBookings.filter(b => b.createdAt && new Date(b.createdAt).toISOString().split("T")[0] === dateStr).length;
+      const revenue = myBookings.filter(b => b.createdAt && new Date(b.createdAt).toISOString().split("T")[0] === dateStr).reduce((sum, b) => sum + (b.totalCost || 0), 0);
+      dailyData.push({ date: dateStr, bookings: count, revenue });
     }
+
+    // Status Breakdown
+    const statusBreakdown = [
+      { name: "Confirmed", value: myBookings.filter(b => ["CONFIRMED", "PAYMENT_DONE"].includes(b.status)).length, color: "#4F46E5" },
+      { name: "Pending", value: myBookings.filter(b => ["ID_PENDING", "ID_SUBMITTED"].includes(b.status)).length, color: "#F59E0B" },
+      { name: "Completed", value: myBookings.filter(b => b.status === "COMPLETED").length, color: "#10B981" },
+      { name: "Cancelled", value: myBookings.filter(b => ["CANCELLED", "REJECTED"].includes(b.status)).length, color: "#EF4444" },
+    ].filter(s => s.value > 0);
+
+    // Occupancy Rate Calculation (Simplified: Bookings vs base capacity of 10 rooms per hotel per night)
+    const daysInMonth = 30;
+    const totalPotentialNights = totalHotels * 10 * daysInMonth;
+    const actualBookedNights = myBookings.filter(b => b.status !== "CANCELLED").length; // Simplified: 1 booking = 1 room night for this stat
+    const occupancyRate = totalPotentialNights > 0 ? (actualBookedNights / totalPotentialNights) * 100 : 0;
+
+    // Cancelled bookings count (last 30 days)
+    const cancelledBookingsCount = myBookings.filter(b =>
+      ["CANCELLED", "REJECTED"].includes(b.status) &&
+      new Date(b.createdAt) >= thirtyDaysAgo
+    ).length;
 
     // Hotel performance metrics (Filtered)
     const hotelPerformance = await Booking.aggregate([
@@ -187,6 +192,9 @@ router.get("/dashboard", verifyToken, async (req: Request, res: Response) => {
           _id: "$hotelId",
           bookingCount: { $sum: 1 },
           totalRevenue: { $sum: "$totalCost" },
+          cancelledCount: {
+            $sum: { $cond: [{ $in: ["$status", ["CANCELLED", "REJECTED"]] }, 1, 0] }
+          }
         },
       },
       {
@@ -210,33 +218,51 @@ router.get("/dashboard", verifyToken, async (req: Request, res: Response) => {
           _id: "$hotel._id",
           name: "$hotel.name",
           city: "$hotel.city",
+          type: "$hotel.type",
           starRating: "$hotel.starRating",
           pricePerNight: "$hotel.pricePerNight",
           bookingCount: 1,
           totalRevenue: 1,
+          cancelledCount: 1,
+          occupancy: { $multiply: [{ $divide: ["$bookingCount", 30] }, 100] } // Mock occupancy per hotel
         },
       },
       {
-        $sort: { bookingCount: -1 },
+        $sort: { totalRevenue: -1 },
       },
       {
         $limit: 10,
       },
     ]);
 
+    // Simple Rule-Based Insights
+    const insights = [];
+    if (revenueGrowth > 10) insights.push({ type: "success", message: `Your revenue increased by ${revenueGrowth.toFixed(1)}% compared to last month!`, icon: "TrendingUp" });
+    if (occupancyRate < 20) insights.push({ type: "warning", message: "Occupancy rate is low this month. Consider professional promotions.", icon: "AlertCircle" });
+
+    hotelPerformance.forEach(hp => {
+      if (hp.cancelledCount > 2) {
+        insights.push({ type: "error", message: `High cancellation rate for ${hp.name}. Check your policies.`, icon: "XCircle" });
+      }
+    });
+
     const businessInsightsData = {
       overview: {
         totalHotels,
-        totalUsers: uniqueGuests, // Renaming semantically in frontend, sending as totalUsers key to keep contract
+        totalUsers: uniqueGuests,
         totalBookings,
         recentBookings,
         totalRevenue: Math.round(totalRevenue * 100) / 100,
         recentRevenue: Math.round(recentRevenue * 100) / 100,
         revenueGrowth: Math.round(revenueGrowth * 100) / 100,
+        occupancyRate: Math.round(occupancyRate * 10) / 10,
+        cancelledBookings: cancelledBookingsCount,
       },
+      statusBreakdown,
       popularDestinations,
-      dailyBookings,
+      dailyBookings: dailyData,
       hotelPerformance,
+      insights: insights.slice(0, 4),
       lastUpdated: now.toISOString(),
     };
 
