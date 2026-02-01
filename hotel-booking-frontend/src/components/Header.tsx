@@ -204,28 +204,6 @@ const Header = () => {
                         </Link>
                       )}
 
-                      {/* API Documentation Link */}
-                      {!isHotelOwner && (
-                        <Link
-                          className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                          to="/api-docs"
-                        >
-                          <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                          API Docs
-                        </Link>
-                      )}
-
-                      {/* API Status Link */}
-                      {!isHotelOwner && (
-                        <Link
-                          className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                          to="/api-status"
-                        >
-                          <Activity className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                          API Status
-                        </Link>
-                      )}
-
                       <SignOutButton />
                     </>
                   )}

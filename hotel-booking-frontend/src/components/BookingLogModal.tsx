@@ -27,6 +27,8 @@ import {
 import { Button } from "./ui/button";
 import { useMutation, useQueryClient } from "react-query";
 import useAppContext from "../hooks/useAppContext";
+import ChatModal from "./ChatModal";
+import { MessageSquare } from "lucide-react";
 
 interface BookingLogModalProps {
   isOpen: boolean;
@@ -43,6 +45,10 @@ const BookingLogModal: React.FC<BookingLogModalProps> = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+
+  // Chat Modal State
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [chatBookingData, setChatBookingData] = useState<{ id: string, guestName: string } | null>(null);
 
   const { data: bookings, isLoading } = useQueryWithLoading(
     "fetchHotelBookings",
@@ -415,6 +421,20 @@ const BookingLogModal: React.FC<BookingLogModalProps> = ({
                                 >
                                   {booking.paymentStatus}
                                 </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setChatBookingData({
+                                      id: booking._id,
+                                      guestName: `${booking.firstName} ${booking.lastName}`
+                                    });
+                                    setIsChatModalOpen(true);
+                                  }}
+                                  className="h-8 w-8 p-0 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
                           </CardHeader>
@@ -542,7 +562,19 @@ const BookingLogModal: React.FC<BookingLogModalProps> = ({
           </div>
         </div>
       </DialogContent>
-    </Dialog>
+
+      <ChatModal
+        isOpen={isChatModalOpen}
+        onClose={() => {
+          setIsChatModalOpen(false);
+          setChatBookingData(null);
+        }}
+        bookingId={chatBookingData?.id || ""}
+        hotelName={hotelName}
+        receiverName={chatBookingData?.guestName || ""}
+        userRole="hotel_owner"
+      />
+    </Dialog >
   );
 };
 

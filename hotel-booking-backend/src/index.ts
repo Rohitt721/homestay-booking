@@ -18,6 +18,7 @@ import businessInsightsRoutes from "./routes/business-insights";
 import subscriptionRoutes from "./routes/subscriptions";
 import rankingRoutes from "./routes/ranking";
 import reviewRoutes from "./routes/reviews";
+import messageRoutes from "./routes/messages";
 import swaggerUi from "swagger-ui-express";
 import { specs } from "./swagger";
 import helmet from "helmet";
@@ -253,6 +254,7 @@ app.use("/api/business-insights", businessInsightsRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/rankings", rankingRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Swagger API Documentation
 app.use(

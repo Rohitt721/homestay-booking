@@ -21,9 +21,11 @@ import {
   LayoutDashboard,
   Gem,
   ArrowRight,
+  MessageSquare,
 } from "lucide-react";
 import IdUploadModal from "../components/IdUploadModal";
 import ReviewModal from "../components/ReviewModal";
+import ChatModal from "../components/ChatModal";
 import { useState, useMemo } from "react";
 import { Button } from "../components/ui/button";
 
@@ -40,7 +42,11 @@ const MyBookings = () => {
     hotelName: string;
   } | null>(null);
 
-  const { data: hotels, refetch } = useQueryWithLoading<HotelWithBookingsType[]>(
+  // Chat Modal State
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [chatBookingData, setChatBookingData] = useState<{ id: string, hotelName: string, ownerName: string } | null>(null);
+
+  const { data: hotels, isLoading, refetch } = useQueryWithLoading<HotelWithBookingsType[]>(
     "fetchMyBookings",
     apiClient.fetchMyBookings,
     {
@@ -261,6 +267,24 @@ const MyBookings = () => {
                   </Button>
                 )}
 
+                {(booking.status === "CONFIRMED" || booking.status === "ID_SUBMITTED") && (
+                  <Button
+                    onClick={() => {
+                      setChatBookingData({
+                        id: booking._id,
+                        hotelName: hotel.name,
+                        ownerName: "Hotel Host" // We could fetch actual owner name, but for now this works
+                      });
+                      setIsChatModalOpen(true);
+                    }}
+                    className="flex-1 md:flex-none border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-xl px-6 py-5 font-bold flex items-center gap-2"
+                    variant="outline"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Chat with Owner
+                  </Button>
+                )}
+
                 <Button
                   variant="outline"
                   className="flex-1 md:flex-none border-gray-200 hover:bg-gray-50 rounded-xl px-6 py-5 font-bold"
@@ -410,6 +434,18 @@ const MyBookings = () => {
         bookingId={reviewBookingData?.id || ""}
         hotelId={reviewBookingData?.hotelId || ""}
         hotelName={reviewBookingData?.hotelName || ""}
+      />
+
+      <ChatModal
+        isOpen={isChatModalOpen}
+        onClose={() => {
+          setIsChatModalOpen(false);
+          setChatBookingData(null);
+        }}
+        bookingId={chatBookingData?.id || ""}
+        hotelName={chatBookingData?.hotelName || ""}
+        receiverName={chatBookingData?.ownerName || ""}
+        userRole="user"
       />
     </div>
   );

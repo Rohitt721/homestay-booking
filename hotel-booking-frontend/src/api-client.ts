@@ -311,3 +311,18 @@ export const submitReview = async (reviewData: any) => {
   const response = await axiosInstance.post("/api/reviews", reviewData);
   return response.data;
 };
+
+export const fetchMessages = async (bookingId: string) => {
+  const response = await axiosInstance.get(`/api/messages/${bookingId}`);
+  return response.data;
+};
+
+export const sendMessage = async (messageData: { bookingId: string; content: string; senderRole: string; senderName: string }) => {
+  const response = await axiosInstance.post("/api/messages", messageData);
+  return response.data;
+};
+
+export const fetchOwnerChats = async () => {
+  const response = await axiosInstance.get("/api/messages/owner/chats");
+  return response.data;
+};
