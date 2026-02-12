@@ -23,8 +23,8 @@
 
 A comprehensive, production-ready hotel booking platform built with the MERN stack (MongoDB, Express.js, React, Node.js) featuring advanced search, booking management, analytics dashboard, and payment integration.
 
-- **Frontend-Live-Demo:** [https://mern-booking-hotel.netlify.app/](https://mern-booking-hotel.netlify.app/)
-- **Backend-Live-Demo:** [https://mern-hotel-booking-68ej.onrender.com](https://mern-hotel-booking-68ej.onrender.com)
+- **Frontend-Live-Demo:** [https://hotel-booking-frontend-ebon.vercel.app](https://hotel-booking-frontend-ebon.vercel.app)
+- **Backend-Live-Demo:** [https://hotel-booking-backend-roan-two.vercel.app](https://hotel-booking-backend-roan-two.vercel.app)
 
 ![HomeStay](https://img.shields.io/badge/MERN-Stack-blue?style=for-the-badge&logo=mongodb&logoColor=white)
 ![React](https://img.shields.io/badge/React-18.2.0-blue?style=for-the-badge&logo=react)
@@ -137,7 +137,8 @@ This project serves as a **comprehensive hotel booking ecosystem** that bridges 
 
 #### 🌟 **Innovative Features:**
 
-- **Smart Search Algorithm**: AI-powered hotel recommendations
+- **AI Trip Planner**: Intelligent itinerary generation using Google Gemini AI models
+- **Smart Search Algorithm**: Advanced hotel recommendations with geospatial filtering
 - **Real-time Availability**: Live booking status and instant confirmation
 - **Advanced Analytics**: Predictive insights and business forecasting
 - **Multi-language Support**: Internationalization ready
@@ -146,6 +147,7 @@ This project serves as a **comprehensive hotel booking ecosystem** that bridges 
 #### 🔒 **Security Features:**
 
 - **Dual Authentication**: Cookie-based + Authorization header support
+- **Google OAuth**: Fast and secure social login integration
 - **Privacy Compliance**: GDPR-ready data handling
 - **Rate Limiting**: Protection against abuse and DDoS
 - **Input Validation**: Comprehensive data sanitization
@@ -327,6 +329,7 @@ This project serves as a **comprehensive hotel booking ecosystem** that bridges 
 - **Lucide React** - Beautiful icons
 - **React Hook Form** - Form validation and handling
 - **Stripe React** - Payment processing
+- **Google OAuth** - Social Login
 
 ### Backend
 
@@ -344,6 +347,7 @@ This project serves as a **comprehensive hotel booking ecosystem** that bridges 
 - **Helmet** - Security middleware
 - **Morgan** - HTTP request logger
 - **CORS** - Cross-origin resource sharing
+- **Google Generative AI** - AI Integration
 
 ### Development Tools
 
@@ -496,6 +500,9 @@ STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
 # Frontend URL (for CORS)
 FRONTEND_URL=http://localhost:5174
 
+# Google Gemini AI
+GEMINI_API_KEY=your-gemini-api-key
+
 # Optional: Email Configuration (not used in this project yet)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -513,6 +520,9 @@ VITE_API_BASE_URL=http://localhost:7002
 
 # Stripe Configuration
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+
+# Google OAuth
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 # Optional: Analytics (not used in this project yet)
 VITE_GOOGLE_ANALYTICS_ID=GA_MEASUREMENT_ID
@@ -546,6 +556,21 @@ Generate a secure random string:
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
+
+#### 5. Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project
+3. Navigate to APIs & Services > Credentials
+4. Create OAuth Client ID (Web Application)
+5. Add Authorized Origins: `http://localhost:5173` and your production URL
+6. Copy Client ID to `VITE_GOOGLE_CLIENT_ID`
+
+#### 6. Google Gemini AI Setup
+
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create API Key
+3. Copy Key to `GEMINI_API_KEY`
 
 ---
 
@@ -1133,57 +1158,36 @@ test("should search hotels with filters", async ({ page }) => {
 
 ## 🚀 Deployment
 
-### Backend Deployment (Railway/Heroku)
+The application is optimized for deployment on **Vercel** (Frontend & Backend).
 
-1. **Prepare for deployment:**
+### Prerequisites
 
-```bash
-cd hotel-booking-backend
-npm run build
-```
+1. Create a [Vercel Account](https://vercel.com)
+2. Install Vercel CLI: `npm i -g vercel`
 
-2. **Environment variables setup:**
+### Deployment Steps
 
-   - Set all required environment variables in your hosting platform
-   - Ensure MongoDB connection string is production-ready
-   - Configure CORS for production domain
+1. **Deploy Backend**:
+   ```bash
+   cd hotel-booking-backend
+   vercel --prod
+   ```
+   - Add Environment Variables in Vercel Project Settings.
+   - Note: Ensure `FRONTEND_URL` is set to your production frontend URL.
 
-3. **Deploy to Render:**
-
-```bash
-# Connect your GitHub repository
-# Render normally doesn't auto-deploy on push to main branch, so everytime you modify anything in backend, you have to redeploy the render server by yourself
-```
-
-### Frontend Deployment (Netlify/Vercel)
-
-1. **Build the application:**
-
-```bash
-cd hotel-booking-frontend
-npm run build
-```
-
-2. **Deploy to Netlify:**
-
-```bash
-# Connect your GitHub repository
-# Netlify will auto-deploy on push to main branch
-```
-
-3. **Environment variables:**
-   - Set `VITE_API_BASE_URL` to your production backend URL
-   - Configure Stripe keys for production
+2. **Deploy Frontend**:
+   ```bash
+   cd hotel-booking-frontend
+   vercel --prod
+   ```
+   - Add `VITE_API_BASE_URL` Environment Variable (point to backend URL).
 
 ### Production Checklist
 
-- [ ] Environment variables configured
-- [ ] Database connection secured
-- [ ] CORS settings updated
-- [ ] SSL certificates installed
-- [ ] Error monitoring setup
-- [ ] Performance monitoring enabled
-- [ ] Backup strategy implemented
+- [ ] Environment variables configured in Vercel
+- [ ] MongoDB Atlas IP Whitelist allows Vercel (`0.0.0.0/0`)
+- [ ] Google OAuth authorized origins updated
+- [ ] Stripe Webhooks configured (if applicable)
 
 ---
 

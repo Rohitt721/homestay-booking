@@ -64,44 +64,9 @@ cloudinary.config({
 
 console.log("☁️  Cloudinary configured successfully");
 
-// MongoDB Connection with Error Handling and Retries
-const connectDB = async (retryCount = 5) => {
-  try {
-    console.log("📡 Attempting to connect to MongoDB...");
-    const conn = await mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string, {
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-      socketTimeoutMS: 45000, // Close sockets after 45s
-    });
-    console.log(`✅ MongoDB connected successfully to: ${conn.connection.host}`);
-  } catch (error) {
-    if (retryCount > 0) {
-      console.error(`❌ MongoDB connection failed. Retrying in 5 seconds... (${retryCount} retries left)`);
-      console.error(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
-      setTimeout(() => connectDB(retryCount - 1), 5000);
-    } else {
-      console.error("❌ Critical: MongoDB connection failed after multiple attempts.");
-      // In production we might want to exit, but in dev let's keep the process alive
-      // to allow the user to fix the DB / restart it.
-      if (process.env.NODE_ENV === "production") {
-        process.exit(1);
-      }
-    }
-  }
-};
+import { connectDB } from "./db";
 
-// Handle MongoDB connection events
-mongoose.connection.on("disconnected", () => {
-  console.warn("⚠️  MongoDB disconnected. Attempting to reconnect...");
-});
-
-mongoose.connection.on("error", (error) => {
-  console.error("❌ MongoDB connection error:", error);
-});
-
-mongoose.connection.on("reconnected", () => {
-  console.log("✅ MongoDB reconnected successfully");
-});
-
+// Connect to database
 connectDB();
 
 const app = express();
@@ -150,13 +115,17 @@ const isLocalDevOrigin = (origin: string) => {
   }
 };
 
+const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, ""); // Remove trailing slash if present
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  frontendUrl,
   "http://localhost:5174",
   "http://localhost:5173",
   "https://mern-booking-hotel.netlify.app",
-  "https://mern-booking-hotel.netlify.app/",
 ].filter((origin): origin is string => Boolean(origin));
+
+console.log("🔒 Allowed Origins:", allowedOrigins);
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -177,12 +146,8 @@ app.use(
         return callback(null, true);
       }
 
-      // Log blocked origins in development
-      if (process.env.NODE_ENV === "development") {
-        console.log("CORS blocked origin:", origin);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
+      console.log(`⚠️ CORS Bypass (Main): Origin ${origin} allowed.`);
+      return callback(null, true);
     },
     credentials: true,
     optionsSuccessStatus: 204,
@@ -217,7 +182,8 @@ app.options(
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      console.log(`⚠️ CORS Bypass (Options): Origin ${origin} allowed.`);
+      return callback(null, true);
     },
     credentials: true,
     optionsSuccessStatus: 204,

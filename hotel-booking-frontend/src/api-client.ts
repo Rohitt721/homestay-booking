@@ -25,7 +25,17 @@ export const updateUserProfile = async (formData: FormData): Promise<UserType> =
   return response.data;
 };
 
-export const register = async (formData: RegisterFormData) => {
+export const sendOTP = async (email: string) => {
+  const response = await axiosInstance.post("/api/users/send-otp", { email });
+  return response.data;
+};
+
+export const verifyOTP = async (email: string, otp: string) => {
+  const response = await axiosInstance.post("/api/users/verify-otp", { email, otp });
+  return response.data;
+};
+
+export const register = async (formData: RegisterFormData & { otpToken: string }) => {
   const response = await axiosInstance.post("/api/users/register", formData);
   return response.data;
 };
