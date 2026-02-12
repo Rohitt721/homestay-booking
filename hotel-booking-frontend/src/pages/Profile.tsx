@@ -171,11 +171,13 @@ const Profile = () => {
                             <p className="text-sm text-gray-500 font-medium mb-6">{currentUser.email}</p>
 
                             <div className="space-y-3 text-left bg-gray-50 p-5 rounded-2xl">
-                                <div className="flex items-center gap-3 text-sm text-gray-600">
-                                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                                    <span className="font-bold">Status:</span>
-                                    <span className="capitalize text-emerald-600">{currentUser.verification?.status || "Pending"}</span>
-                                </div>
+                                {!isAdmin && (
+                                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                                        <span className="font-bold">Status:</span>
+                                        <span className="capitalize text-emerald-600">{currentUser.verification?.status || "Pending"}</span>
+                                    </div>
+                                )}
                                 <div className="flex items-center gap-3 text-sm text-gray-600">
                                     <Briefcase className="w-4 h-4 text-indigo-500" />
                                     <span className="font-bold">Role:</span>
@@ -184,26 +186,28 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Verification Status Card */}
-                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
-                                <ShieldAlert className="w-5 h-5 text-gray-400" />
-                                Verification
-                            </h3>
-                            {currentUser.verification?.status === "VERIFIED" ? (
-                                <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-center">
-                                    <ShieldCheck className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                                    <p className="text-emerald-700 font-bold text-sm">Identity Verified</p>
-                                    <p className="text-emerald-600/80 text-xs mt-1">You are fully verified to book authentic stays.</p>
-                                </div>
-                            ) : (
-                                <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-center">
-                                    <ShieldAlert className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-                                    <p className="text-orange-700 font-bold text-sm">Not Verified</p>
-                                    <a href="/verify-identity" className="text-indigo-600 text-xs font-black underline mt-2 block">Complete Verification</a>
-                                </div>
-                            )}
-                        </div>
+                        {/* Verification Status Card - Hidden for Admins */}
+                        {!isAdmin && (
+                            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+                                <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
+                                    <ShieldAlert className="w-5 h-5 text-gray-400" />
+                                    Verification
+                                </h3>
+                                {currentUser.verification?.status === "VERIFIED" ? (
+                                    <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-center">
+                                        <ShieldCheck className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                                        <p className="text-emerald-700 font-bold text-sm">Identity Verified</p>
+                                        <p className="text-emerald-600/80 text-xs mt-1">You are fully verified to book authentic stays.</p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-center">
+                                        <ShieldAlert className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                                        <p className="text-orange-700 font-bold text-sm">Not Verified</p>
+                                        <a href="/verify-identity" className="text-indigo-600 text-xs font-black underline mt-2 block">Complete Verification</a>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Column - Form Fields */}
