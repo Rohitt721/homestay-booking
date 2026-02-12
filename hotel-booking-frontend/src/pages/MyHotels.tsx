@@ -260,12 +260,12 @@ const MyHotels = () => {
                   ₹{hotel.pricePerNight}/night
                 </Badge>
                 {hotel.status === "DRAFT" ? (
-                  <Badge className="bg-amber-500 text-white flex items-center gap-1">
+                  <Badge className="bg-slate-200 text-slate-700 flex items-center gap-1 border-slate-300">
                     <AlertCircle className="w-3 h-3" />
                     Draft
                   </Badge>
                 ) : (
-                  <Badge className="bg-green-500 text-white flex items-center gap-1">
+                  <Badge className="bg-yellow-400 text-yellow-900 flex items-center gap-1 border-yellow-500 font-bold shadow-sm">
                     <CheckCircle2 className="w-3 h-3" />
                     Live
                   </Badge>
