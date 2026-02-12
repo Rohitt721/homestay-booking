@@ -5,7 +5,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "react-query";
 import { useState } from "react";
 
-const GoogleAuth = () => {
+interface GoogleAuthProps {
+    role?: "user" | "hotel_owner";
+}
+
+const GoogleAuth = ({ role }: GoogleAuthProps) => {
     const { showToast } = useAppContext();
     const navigate = useNavigate();
     const location = useLocation();
@@ -16,7 +20,7 @@ const GoogleAuth = () => {
         setIsLoading(true);
         try {
             if (credentialResponse.credential) {
-                await apiClient.googleSignIn(credentialResponse.credential);
+                await apiClient.googleSignIn(credentialResponse.credential, role);
                 showToast({
                     title: "Login Successful",
                     description: "Welcome! You have been successfully signed in with Google.",

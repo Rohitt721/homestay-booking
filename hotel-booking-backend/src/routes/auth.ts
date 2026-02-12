@@ -202,7 +202,7 @@ router.post("/logout", (req: Request, res: Response) => {
  *         description: Server error
  */
 router.post("/google-login", async (req: Request, res: Response) => {
-  const { idToken } = req.body;
+  const { idToken, role } = req.body;
   console.log("🔵 Google Login Request received");
 
   try {
@@ -234,10 +234,12 @@ router.post("/google-login", async (req: Request, res: Response) => {
         lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "User";
       }
 
-      // Create User (Auth)
+      // Create User (Auth) - use the role from frontend if provided
+      const userRole = (role === "hotel_owner") ? "hotel_owner" : "user";
       user = new User({
         email,
         emailVerified: true,
+        role: userRole,
       });
 
       try {
@@ -252,7 +254,15 @@ router.post("/google-login", async (req: Request, res: Response) => {
         });
         await userProfile.save();
 
-        console.log(`✅ New user created successfully: ${user._id}`);
+        // Create OwnerProfile if hotel_owner
+        if (userRole === "hotel_owner") {
+          const ownerProfile = new OwnerProfile({
+            userId: user._id,
+          });
+          await ownerProfile.save();
+        }
+
+        console.log(`✅ New ${userRole} created successfully via Google: ${user._id}`);
       } catch (saveError) {
         console.error("❌ Error saving new Google user:", saveError);
         throw saveError;

@@ -229,8 +229,8 @@ const Register = () => {
         <div key={step} className="flex items-center">
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${currentStep >= step
-                ? "bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-200"
-                : "bg-gray-100 text-gray-400"
+              ? "bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-200"
+              : "bg-gray-100 text-gray-400"
               }`}
           >
             {currentStep > step ? (
@@ -530,7 +530,7 @@ const Register = () => {
 
                 {/* Google Social Login */}
                 <div className="space-y-4">
-                  <GoogleAuth />
+                  <GoogleAuth role={watch("role") || "user"} />
                 </div>
 
                 {/* Sign In Link */}
@@ -572,10 +572,10 @@ const Register = () => {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${otpError
-                          ? "border-red-300 bg-red-50 text-red-600"
-                          : digit
-                            ? "border-primary-300 bg-primary-50 text-primary-700"
-                            : "border-gray-200 bg-gray-50 text-gray-900"
+                        ? "border-red-300 bg-red-50 text-red-600"
+                        : digit
+                          ? "border-primary-300 bg-primary-50 text-primary-700"
+                          : "border-gray-200 bg-gray-50 text-gray-900"
                         }`}
                     />
                   ))}

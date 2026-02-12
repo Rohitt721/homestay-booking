@@ -78,11 +78,12 @@ export const signIn = async (formData: SignInFormData) => {
   return response.data;
 };
 
-export const googleSignIn = async (idToken: string) => {
+export const googleSignIn = async (idToken: string, role?: string) => {
   console.log("🔵 Sending Google ID token to backend...");
   try {
     const response = await axiosInstance.post("/api/auth/google-login", {
       idToken,
+      role,
     });
 
     // Store JWT token from response body in localStorage
