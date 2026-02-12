@@ -166,7 +166,7 @@ const DetailsSection = () => {
           <h2 className="text-lg font-semibold text-gray-800">Pricing</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Night (₹) *</label>
             <div className="relative">
@@ -198,23 +198,6 @@ const DetailsSection = () => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Star Rating *</label>
-            <select
-              {...register("starRating", { required: "Star rating is required" })}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-            >
-              <option value="">Select Rating</option>
-              {[1, 2, 3, 4, 5].map((num) => (
-                <option key={num} value={num}>
-                  {"⭐".repeat(num)} ({num} Star{num > 1 ? "s" : ""})
-                </option>
-              ))}
-            </select>
-            {errors.starRating && (
-              <span className="text-red-500 text-sm mt-1 block">{errors.starRating.message}</span>
-            )}
-          </div>
         </div>
       </div>
     </div>

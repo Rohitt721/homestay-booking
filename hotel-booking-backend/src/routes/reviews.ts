@@ -61,13 +61,13 @@ router.post(
 
             await newReview.save();
 
-            // 4. Update Hotel average rating and review count
+            // 4. Update Hotel star rating, average rating, and review count
             const reviews = await Review.find({ hotelId });
             const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
             const averageRating = totalRating / reviews.length;
 
             await Hotel.findByIdAndUpdate(hotelId, {
-                $set: { averageRating },
+                $set: { averageRating, starRating: Math.round(averageRating) },
                 $inc: { reviewCount: 1 },
             });
 

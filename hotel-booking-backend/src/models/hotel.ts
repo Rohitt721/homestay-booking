@@ -14,7 +14,7 @@ const hotelSchema = new mongoose.Schema(
     facilities: [{ type: String, required: true }],
     pricePerNight: { type: Number, required: true, index: true },
     pricePerHour: { type: Number, required: true },
-    starRating: { type: Number, required: true, min: 1, max: 5, index: true },
+    starRating: { type: Number, default: 5, min: 1, max: 5, index: true },
     imageUrls: [{ type: String, required: true }],
     lastUpdated: { type: Date, required: true },
     status: {

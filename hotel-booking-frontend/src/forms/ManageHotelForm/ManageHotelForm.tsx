@@ -18,7 +18,7 @@ export type HotelFormData = {
   type: string[];
   pricePerNight: number;
   pricePerHour: number;
-  starRating: number;
+
   facilities: string[];
   imageFiles?: FileList;
   imageUrls: string[];
@@ -109,7 +109,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     formDataJson.type?.forEach((t, idx) => formData.append(`type[${idx}]`, t));
     formData.append("pricePerNight", formDataJson.pricePerNight?.toString() || "0");
     formData.append("pricePerHour", formDataJson.pricePerHour?.toString() || "0");
-    formData.append("starRating", formDataJson.starRating?.toString() || "3");
+
     formData.append("adultCount", formDataJson.adultCount?.toString() || "1");
     formData.append("childCount", formDataJson.childCount?.toString() || "0");
 
@@ -232,10 +232,10 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
                       type="button"
                       onClick={() => goToStep(step.id)}
                       className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isCompleted
-                          ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
-                          : isCurrent
-                            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 ring-4 ring-blue-500/20'
-                            : 'bg-white/10 text-white/50 hover:bg-white/20'
+                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+                        : isCurrent
+                          ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 ring-4 ring-blue-500/20'
+                          : 'bg-white/10 text-white/50 hover:bg-white/20'
                         }`}
                     >
                       {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
@@ -279,8 +279,8 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
                 onClick={handlePrev}
                 disabled={currentStep === 1}
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${currentStep === 1
-                    ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                    : 'bg-white/10 text-white hover:bg-white/20'
+                  ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                  : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -294,10 +294,10 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
                     type="button"
                     onClick={() => goToStep(step.id)}
                     className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${currentStep === step.id
-                        ? 'bg-white w-8'
-                        : currentStep > step.id
-                          ? 'bg-green-500'
-                          : 'bg-white/30'
+                      ? 'bg-white w-8'
+                      : currentStep > step.id
+                        ? 'bg-green-500'
+                        : 'bg-white/30'
                       }`}
                   />
                 ))}
