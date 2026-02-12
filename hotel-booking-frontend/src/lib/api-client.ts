@@ -9,15 +9,11 @@ const getBaseURL = () => {
 
   // Fallback URLs
   if (window.location.hostname === "mern-booking-hotel.netlify.app") {
-    return "https://mern-hotel-booking-68ej.onrender.com";
-  }
-
-  if (window.location.hostname === "localhost") {
-    return "http://localhost:7003";
+    return "https://hotel-booking-backend-roan-two.vercel.app";
   }
 
   // Default to production
-  return "https://mern-hotel-booking-68ej.onrender.com";
+  return "https://hotel-booking-backend-roan-two.vercel.app";
 };
 
 // Extend axios config to include metadata

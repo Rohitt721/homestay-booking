@@ -511,7 +511,7 @@ const AnalyticsDashboard = () => {
                           <td className="px-8 py-6">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-black relative overflow-hidden group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                {hotel.name[0]}
+                                {hotel.name?.[0] || "?"}
                               </div>
                               <div>
                                 <p className="font-black text-slate-900 group-hover:text-indigo-600 transition-colors">{hotel.name}</p>
@@ -521,7 +521,7 @@ const AnalyticsDashboard = () => {
                           </td>
                           <td className="px-8 py-6">
                             <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-lg">
-                              {hotel.type[0] || "Standard"}
+                              {hotel.type?.[0] || "Standard"}
                             </span>
                           </td>
                           <td className="px-8 py-6">

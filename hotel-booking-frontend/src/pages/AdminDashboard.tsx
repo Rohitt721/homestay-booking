@@ -49,7 +49,7 @@ const SubscriptionsSection = () => {
     const [filterStatus, setFilterStatus] = useState<"ALL" | "ACTIVE" | "EXPIRED">("ALL");
     const [selectedSub, setSelectedSub] = useState<any | null>(null);
 
-    const { data: rawSubscriptions, isLoading } = useQuery("allSubscriptions", apiClient.fetchAllSubscriptions);
+    const { data: rawSubscriptions, isLoading, isError, error } = useQuery("allSubscriptions", apiClient.fetchAllSubscriptions);
 
     const subscriptions = rawSubscriptions?.map((sub: any) => ({
         id: sub._id,
@@ -85,6 +85,18 @@ const SubscriptionsSection = () => {
 
     if (isLoading) {
         return <div className="p-20 text-center text-gray-400 animate-pulse">Loading subscriptions...</div>;
+    }
+
+    if (isError) {
+        return (
+            <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
+                <AlertTriangle className="w-8 h-8 shrink-0" />
+                <div>
+                    <h3 className="font-bold text-lg">Failed to load subscriptions</h3>
+                    <p className="text-sm opacity-80">{(error as Error)?.message || "An unexpected error occurred accessing the database."}</p>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -254,10 +266,10 @@ const SubscriptionsSection = () => {
 
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-black text-white shadow-xl">
-                                    {selectedSub.ownerName[0]}
+                                    {selectedSub.ownerName?.[0] || "?"}
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-white">{selectedSub.ownerName}</h3>
+                                    <h3 className="text-2xl font-black text-white">{selectedSub.ownerName || "Unknown Owner"}</h3>
                                     <p className="text-gray-400 font-medium">{selectedSub.email}</p>
                                 </div>
                             </div>
@@ -334,7 +346,7 @@ const VerificationsSection = () => {
     const queryClient = useQueryClient();
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-    const { data: verifications, refetch } = useQuery("pendingVerifications", apiClient.fetchPendingVerifications);
+    const { data: verifications, refetch, isError, error } = useQuery("pendingVerifications", apiClient.fetchPendingVerifications);
 
     const { mutate: updateStatus, isLoading } = useMutation(
         ({ userId, status, reason }: { userId: string, status: "VERIFIED" | "REJECTED", reason?: string }) =>
@@ -352,6 +364,18 @@ const VerificationsSection = () => {
     );
 
     const selectedUser = verifications?.find((u: any) => u._id === selectedUserId);
+
+    if (isError) {
+        return (
+            <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
+                <ShieldAlert className="w-8 h-8 shrink-0" />
+                <div>
+                    <h3 className="font-bold text-lg">Failed to load verification requests</h3>
+                    <p className="text-sm opacity-80">{(error as Error)?.message || "Internal server error. Please try again later."}</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!verifications || verifications.length === 0) {
         return (
@@ -382,7 +406,7 @@ const VerificationsSection = () => {
                         >
                             <div className="flex items-center gap-4">
                                 <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/50">
-                                    {user.firstName[0]}{user.lastName[0]}
+                                    {user.firstName?.[0] || "?"}{user.lastName?.[0] || "?"}
                                 </div>
                                 <div className="min-w-0">
                                     <h4 className="font-bold text-white truncate">{user.firstName} {user.lastName}</h4>
@@ -500,7 +524,7 @@ const ReportsSection = () => {
     const [filterStatus, setFilterStatus] = useState<"ALL" | "Open" | "In Review" | "Resolved">("ALL");
     const [selectedReport, setSelectedReport] = useState<any | null>(null);
 
-    const { data: reports, isLoading } = useQuery("allReports", apiClient.fetchAllReports);
+    const { data: reports, isLoading, isError, error } = useQuery("allReports", apiClient.fetchAllReports);
 
     const { mutate: updateStatus, isLoading: isUpdating } = useMutation(
         ({ reportId, status }: { reportId: string, status: "Open" | "In Review" | "Resolved" }) =>
@@ -535,6 +559,18 @@ const ReportsSection = () => {
 
     if (isLoading) {
         return <div className="p-20 text-center text-gray-400 animate-pulse">Loading reports...</div>;
+    }
+
+    if (isError) {
+        return (
+            <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
+                <AlertTriangle className="w-8 h-8 shrink-0" />
+                <div>
+                    <h3 className="font-bold text-lg">Failed to load reports</h3>
+                    <p className="text-sm opacity-80">{(error as Error)?.message || "Could not fetch report data."}</p>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -780,8 +816,8 @@ const ReportsSection = () => {
 
 const AdminDashboard = () => {
     const { data: stats } = useQuery("adminStats", apiClient.fetchAdminStats);
-    const { data: users } = useQuery("allUsers", apiClient.fetchAllUsers);
-    const { data: hotels } = useQuery("allHotels", apiClient.fetchAllHotels);
+    const { data: users, isError: isUsersError, error: usersError } = useQuery("allUsers", apiClient.fetchAllUsers);
+    const { data: hotels, isError: isHotelsError, error: hotelsError } = useQuery("allHotels", apiClient.fetchAllHotels);
     const { data: verifications } = useQuery("pendingVerifications", apiClient.fetchPendingVerifications);
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -793,13 +829,13 @@ const AdminDashboard = () => {
     };
 
     const filteredUsers = users?.filter((u: any) =>
-        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.firstName?.toLowerCase().includes(searchTerm.toLowerCase())
+        (u.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.firstName || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredHotels = hotels?.filter((h: any) =>
-        h.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        h.city?.toLowerCase().includes(searchTerm.toLowerCase())
+        (h.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (h.city || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
 
@@ -1003,6 +1039,16 @@ const AdminDashboard = () => {
                             </div>
                         </div>
 
+                        {isUsersError && (
+                            <div className="p-6 mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
+                                <AlertTriangle className="w-8 h-8 shrink-0" />
+                                <div>
+                                    <h3 className="font-bold text-lg">Failed to load users</h3>
+                                    <p className="text-sm opacity-80">{(usersError as Error)?.message || "Database connection failure."}</p>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-white/5">
@@ -1020,7 +1066,7 @@ const AdminDashboard = () => {
                                                 <td className="px-8 py-6 whitespace-nowrap">
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-10 w-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center text-gray-300 font-black text-sm group-hover:from-blue-500 group-hover:to-purple-600 group-hover:text-white transition-all shadow-inner border border-white/10">
-                                                            {user.firstName[0]}{user.lastName[0]}
+                                                            {user.firstName?.[0] || "?"}{user.lastName?.[0] || "?"}
                                                         </div>
                                                         <div>
                                                             <div className="text-base font-black text-white tracking-tight">
@@ -1078,6 +1124,16 @@ const AdminDashboard = () => {
                                 />
                             </div>
                         </div>
+
+                        {isHotelsError && (
+                            <div className="p-6 mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
+                                <AlertTriangle className="w-8 h-8 shrink-0" />
+                                <div>
+                                    <h3 className="font-bold text-lg">Failed to load hotels</h3>
+                                    <p className="text-sm opacity-80">{(hotelsError as Error)?.message || "Could not retrieve hotel data."}</p>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredHotels?.map((hotel: any) => (

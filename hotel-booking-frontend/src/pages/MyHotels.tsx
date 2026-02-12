@@ -82,11 +82,13 @@ const MyHotels = () => {
   } | null>(null);
   const [isBookingLogOpen, setIsBookingLogOpen] = useState(false);
 
-  const { data: hotelData } = useQueryWithLoading(
+  const { data: hotelData, isError, error, refetch } = useQueryWithLoading(
     "fetchMyHotels",
     apiClient.fetchMyHotels,
     {
-      onError: () => { },
+      onError: () => {
+        showToast({ title: "Error Loading Hotels", description: "Could not fetch your hotel listings", type: "ERROR" });
+      },
       loadingMessage: "Loading your hotels...",
     }
   );
@@ -100,6 +102,24 @@ const MyHotels = () => {
     setIsBookingLogOpen(false);
     setSelectedHotel(null);
   };
+
+  if (isError) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-50 rounded-2xl p-8 max-w-md mx-auto border border-red-100">
+          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-red-900 mb-2">Error Loading Hotels</h3>
+          <p className="text-red-600 mb-6">{(error as Error).message || "An unexpected error occurred."}</p>
+          <button
+            onClick={() => refetch()}
+            className="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!hotelData) {
     return (
@@ -228,7 +248,7 @@ const MyHotels = () => {
             {/* Hotel Image */}
             <div className="relative h-48 overflow-hidden">
               <img
-                src={hotel.imageUrls[0]}
+                src={hotel.imageUrls?.[0] || ""}
                 alt={hotel.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />

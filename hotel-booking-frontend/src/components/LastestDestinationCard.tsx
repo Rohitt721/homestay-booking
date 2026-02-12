@@ -16,7 +16,7 @@ const LatestDestinationCard = ({ hotel }: Props) => {
     >
       <div className="w-full h-full relative">
         <img
-          src={hotel.imageUrls[0]}
+          src={hotel.imageUrls?.[0] || ""}
           className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
           style={{ minHeight: 350, maxHeight: 350 }}
         />

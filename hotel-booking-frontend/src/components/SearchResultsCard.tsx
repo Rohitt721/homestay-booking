@@ -43,8 +43,9 @@ const SearchResultsCard = ({ hotel }: Props) => {
         {/* Image Section */}
         <div className="relative overflow-hidden h-64 xl:h-[500px]">
           <img
-            src={hotel.imageUrls[0]}
-            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            src={hotel.imageUrls?.[0] || ""}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            alt={hotel.name}
           />
 
           {/* Overlay Badges */}

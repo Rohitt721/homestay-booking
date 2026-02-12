@@ -20,7 +20,8 @@ import {
     ExternalLink,
     ShieldAlert,
     Building2,
-    History
+    History,
+    Sparkles,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Badge } from "../components/ui/badge";
@@ -374,7 +375,7 @@ const MyGuests = () => {
                                                     <div className="xl:w-80 space-y-6">
                                                         <div className="flex items-center gap-5">
                                                             <div className="h-14 w-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xl">
-                                                                {booking.firstName[0]}
+                                                                {booking.firstName?.[0] || "?"}
                                                             </div>
                                                             <div>
                                                                 <h4 className="text-lg font-black text-gray-900">{booking.firstName} {booking.lastName}</h4>
@@ -530,7 +531,7 @@ const MyGuests = () => {
                                             >
                                                 <div className="flex items-center gap-8">
                                                     <div className="h-20 w-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center font-black text-3xl shadow-xl shadow-indigo-100 group-hover:scale-105 transition-transform duration-500">
-                                                        {chat.userId.firstName[0]}
+                                                        {chat.userId?.firstName?.[0] || "?"}
                                                     </div>
                                                     <div className="space-y-1">
                                                         <h4 className="text-2xl font-black text-gray-900 tracking-tight group-hover:text-indigo-600 transition-colors">

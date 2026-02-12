@@ -21,7 +21,7 @@ import {
 const Detail = () => {
   const { hotelId } = useParams();
 
-  const { data: hotel } = useQueryWithLoading(
+  const { data: hotel, isError, error } = useQueryWithLoading(
     "fetchHotelById",
     () => apiClient.fetchHotelById(hotelId || ""),
     {
@@ -29,6 +29,15 @@ const Detail = () => {
       loadingMessage: "Loading hotel details...",
     }
   );
+
+  if (isError) {
+    return (
+      <div className="text-center text-red-500 py-10 bg-red-50 rounded-lg">
+        <h3 className="text-lg font-bold">Error Loading Hotel</h3>
+        <p>{(error as Error).message || "Could not fetch hotel details."}</p>
+      </div>
+    );
+  }
 
   if (!hotel) {
     return (

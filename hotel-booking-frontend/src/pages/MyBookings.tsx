@@ -60,7 +60,7 @@ const MyBookings = () => {
     ownerId: string;
   } | null>(null);
 
-  const { data: hotels, isLoading, refetch } = useQuery(
+  const { data: hotels, isLoading, isError, error, refetch } = useQuery(
     "fetchMyBookings",
     apiClient.fetchMyBookings
   );
@@ -127,6 +127,21 @@ const MyBookings = () => {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
+        <div className="bg-red-50 p-8 rounded-3xl shadow-lg text-center max-w-md border border-red-100">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-red-900 mb-2">Oops! Something went wrong</h3>
+          <p className="text-red-600 mb-6">{(error as Error).message || "We couldn't load your bookings. Please try again."}</p>
+          <Button onClick={() => refetch()} className="bg-red-600 hover:bg-red-700 text-white">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!hotels || hotels.length === 0) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
@@ -182,7 +197,7 @@ const MyBookings = () => {
           {/* Hotel Image Section */}
           <div className="lg:w-72 h-56 lg:h-auto relative overflow-hidden">
             <img
-              src={hotel.imageUrls[0]}
+              src={hotel.imageUrls?.[0] || ""}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               alt={hotel.name}
             />
@@ -257,11 +272,11 @@ const MyBookings = () => {
                   <div className="flex -space-x-2">
                     {[...Array(Math.min(3, booking.adultCount))].map((_, i) => (
                       <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                        {booking.firstName[0]}
+                        {booking.firstName?.[0] || "?"}
                       </div>
                     ))}
                   </div>
-                  <span className="text-gray-500 font-medium">{booking.firstName} {booking.lastName}</span>
+                  <span className="text-gray-500 font-medium">{booking.firstName || "Unknown"} {booking.lastName || ""}</span>
                 </div>
                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded-lg w-fit">
                   <ShieldCheck className="w-3.5 h-3.5" />
