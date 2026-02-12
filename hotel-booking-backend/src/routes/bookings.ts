@@ -87,23 +87,47 @@ router.patch(
 
     try {
       const { status, cancellationReason } = req.body;
-
-      const updateData: any = { status };
-      if (status === "cancelled" && cancellationReason) {
-        updateData.cancellationReason = cancellationReason;
-      }
-      if (status === "refunded") {
-        updateData.refundAmount = req.body.refundAmount || 0;
-      }
-
-      const booking = await Booking.findByIdAndUpdate(
-        req.params.id,
-        updateData,
-        { new: true }
-      );
+      const booking = await Booking.findById(req.params.id);
 
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
+      }
+
+      const previousStatus = booking.status;
+
+      // Update fields
+      booking.status = status;
+      if (status === "cancelled" && cancellationReason) {
+        booking.cancellationReason = cancellationReason;
+      }
+      if (status === "refunded") {
+        booking.paymentStatus = "refunded";
+        booking.refundAmount = req.body.refundAmount || 0;
+      }
+
+      await booking.save();
+
+      // Update analytics if status changed to cancelled/rejected (and wasn't already)
+      // Note: "rejected" is handled in verify-id route usually, but if done here manually:
+      if (
+        (status === "cancelled" || status === "rejected") &&
+        !["cancelled", "rejected", "refunded"].includes(previousStatus as string)
+      ) {
+        // Update hotel analytics
+        await Hotel.findByIdAndUpdate(booking.hotelId, {
+          $inc: {
+            totalBookings: -1,
+            totalRevenue: -(booking.totalCost || 0),
+          },
+        });
+
+        // Update user analytics
+        await User.findByIdAndUpdate(booking.userId, {
+          $inc: {
+            totalBookings: -1,
+            totalSpent: -(booking.totalCost || 0),
+          },
+        });
       }
 
       res.status(200).json(booking);

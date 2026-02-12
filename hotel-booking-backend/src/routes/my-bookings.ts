@@ -130,6 +130,22 @@ router.post(
         });
       }
 
+      // Update hotel analytics
+      await Hotel.findByIdAndUpdate(booking.hotelId, {
+        $inc: {
+          totalBookings: -1,
+          totalRevenue: -(booking.totalCost || 0),
+        },
+      });
+
+      // Update user analytics
+      await User.findByIdAndUpdate(req.userId, {
+        $inc: {
+          totalBookings: -1,
+          totalSpent: -(booking.totalCost || 0),
+        },
+      });
+
       console.log(`✅ Booking ${bookingId} cancelled by user ${req.userId}`);
       res.status(200).json({ message: "Booking cancelled successfully", booking });
     } catch (error) {
