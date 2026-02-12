@@ -29,6 +29,7 @@ import VerificationPage from "./pages/VerificationPage";
 import Ranking from "./pages/Ranking";
 import Profile from "./pages/Profile";
 import TripPlanner from "./pages/TripPlanner";
+import Welcome from "./pages/Welcome";
 
 const App = () => {
   const { isLoggedIn } = useAppContext();
@@ -106,6 +107,12 @@ const App = () => {
             <AuthLayout>
               <SignIn />
             </AuthLayout>
+          }
+        />
+        <Route
+          path="/welcome"
+          element={
+            <Welcome />
           }
         />
 

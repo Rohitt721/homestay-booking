@@ -202,8 +202,10 @@ router.post("/logout", (req: Request, res: Response) => {
  *         description: Server error
  */
 router.post("/google-login", async (req: Request, res: Response) => {
-  const { idToken, role } = req.body;
+  const { idToken } = req.body;
   console.log("🔵 Google Login Request received");
+
+  let isNewUser = false;
 
   try {
     const ticket = await client.verifyIdToken({
@@ -234,12 +236,11 @@ router.post("/google-login", async (req: Request, res: Response) => {
         lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "User";
       }
 
-      // Create User (Auth) - use the role from frontend if provided
-      const userRole = (role === "hotel_owner") ? "hotel_owner" : "user";
+      // Create User (Auth) - defaults to 'user', onboarding page will set final role
       user = new User({
         email,
         emailVerified: true,
-        role: userRole,
+        onboardingCompleted: false,
       });
 
       try {
@@ -254,15 +255,8 @@ router.post("/google-login", async (req: Request, res: Response) => {
         });
         await userProfile.save();
 
-        // Create OwnerProfile if hotel_owner
-        if (userRole === "hotel_owner") {
-          const ownerProfile = new OwnerProfile({
-            userId: user._id,
-          });
-          await ownerProfile.save();
-        }
-
-        console.log(`✅ New ${userRole} created successfully via Google: ${user._id}`);
+        isNewUser = true;
+        console.log(`✅ New user created via Google: ${user._id}`);
       } catch (saveError) {
         console.error("❌ Error saving new Google user:", saveError);
         throw saveError;
@@ -308,6 +302,7 @@ router.post("/google-login", async (req: Request, res: Response) => {
       message: "Login successful",
       token: token,
       user: combinedUser,
+      isNewUser,
     });
   } catch (error) {
     console.error("❌ Google Login Final Failure:", error);

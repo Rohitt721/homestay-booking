@@ -13,7 +13,6 @@ import {
   UserPlus,
   Sparkles,
   CheckCircle,
-  Building,
   ArrowRight,
   ArrowLeft,
   ShieldCheck,
@@ -40,7 +39,6 @@ export type RegisterFormData = {
   email: string;
   password: string;
   confirmPassword: string;
-  role: "user" | "hotel_owner";
 };
 
 const RESEND_COOLDOWN = 60; // seconds
@@ -80,7 +78,7 @@ const Register = () => {
       });
       await queryClient.invalidateQueries("validateToken");
       setCurrentStep(3); // Show success step
-      setTimeout(() => navigate("/"), 2000);
+      setTimeout(() => navigate("/welcome"), 2000);
     },
     onError: (error: Error) => {
       showToast({
@@ -469,37 +467,7 @@ const Register = () => {
                   )}
                 </div>
 
-                {/* Role Selection */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700">Account Type</Label>
-                  <div className="grid grid-cols-1 gap-3">
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        value="user"
-                        {...register("role")}
-                        defaultChecked
-                        className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
-                      />
-                      <div className="flex items-center space-x-2">
-                        <User className="w-5 h-5 text-gray-600" />
-                        <span className="text-sm font-medium text-gray-900">Guest (User)</span>
-                      </div>
-                    </label>
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        value="hotel_owner"
-                        {...register("role")}
-                        className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
-                      />
-                      <div className="flex items-center space-x-2">
-                        <Building className="w-5 h-5 text-gray-600" />
-                        <span className="text-sm font-medium text-gray-900">Hotel Owner</span>
-                      </div>
-                    </label>
-                  </div>
-                </div>
+
 
                 {/* Submit (Send OTP) */}
                 <Button
@@ -530,7 +498,7 @@ const Register = () => {
 
                 {/* Google Social Login */}
                 <div className="space-y-4">
-                  <GoogleAuth role={watch("role") || "user"} />
+                  <GoogleAuth />
                 </div>
 
                 {/* Sign In Link */}

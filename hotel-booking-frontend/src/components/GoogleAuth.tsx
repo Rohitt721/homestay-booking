@@ -5,11 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "react-query";
 import { useState } from "react";
 
-interface GoogleAuthProps {
-    role?: "user" | "hotel_owner";
-}
-
-const GoogleAuth = ({ role }: GoogleAuthProps) => {
+const GoogleAuth = () => {
     const { showToast } = useAppContext();
     const navigate = useNavigate();
     const location = useLocation();
@@ -20,14 +16,26 @@ const GoogleAuth = ({ role }: GoogleAuthProps) => {
         setIsLoading(true);
         try {
             if (credentialResponse.credential) {
-                await apiClient.googleSignIn(credentialResponse.credential, role);
-                showToast({
-                    title: "Login Successful",
-                    description: "Welcome! You have been successfully signed in with Google.",
-                    type: "SUCCESS",
-                });
+                const data = await apiClient.googleSignIn(credentialResponse.credential);
+
                 await queryClient.invalidateQueries("validateToken");
-                navigate(location.state?.from?.pathname || "/");
+
+                // If this is a new user, redirect to onboarding
+                if (data.isNewUser) {
+                    showToast({
+                        title: "Account Created!",
+                        description: "Let's set up your profile.",
+                        type: "SUCCESS",
+                    });
+                    navigate("/welcome");
+                } else {
+                    showToast({
+                        title: "Login Successful",
+                        description: "Welcome back! You have been successfully signed in.",
+                        type: "SUCCESS",
+                    });
+                    navigate(location.state?.from?.pathname || "/");
+                }
             }
         } catch (error: any) {
             showToast({

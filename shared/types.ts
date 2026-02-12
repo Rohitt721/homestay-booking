@@ -26,6 +26,7 @@ export type UserType = {
   lastLogin?: Date;
   isActive?: boolean;
   emailVerified?: boolean;
+  onboardingCompleted?: boolean;
   profileImage?: string;
   businessInfo?: {
     companyName: string;

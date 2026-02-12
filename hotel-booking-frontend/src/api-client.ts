@@ -37,6 +37,16 @@ export const verifyOTP = async (email: string, otp: string) => {
 
 export const register = async (formData: RegisterFormData & { otpToken: string }) => {
   const response = await axiosInstance.post("/api/users/register", formData);
+
+  // Store JWT token from response body
+  const token = response.data?.token;
+  if (token) {
+    localStorage.setItem("session_id", token);
+  }
+  if (response.data?.userId) {
+    localStorage.setItem("user_id", response.data.userId);
+  }
+
   return response.data;
 };
 
@@ -78,12 +88,11 @@ export const signIn = async (formData: SignInFormData) => {
   return response.data;
 };
 
-export const googleSignIn = async (idToken: string, role?: string) => {
+export const googleSignIn = async (idToken: string) => {
   console.log("🔵 Sending Google ID token to backend...");
   try {
     const response = await axiosInstance.post("/api/auth/google-login", {
       idToken,
-      role,
     });
 
     // Store JWT token from response body in localStorage
@@ -518,3 +527,10 @@ export const getAlternateHotels = async (
   return response.data;
 };
 
+export const completeOnboarding = async (role: "user" | "hotel_owner", heardFrom?: string) => {
+  const response = await axiosInstance.post("/api/users/complete-onboarding", {
+    role,
+    heardFrom,
+  });
+  return response.data;
+};

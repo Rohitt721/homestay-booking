@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
     lastLogin: { type: Date },
     isActive: { type: Boolean, default: true },
     emailVerified: { type: Boolean, default: false },
+    onboardingCompleted: { type: Boolean, default: false },
     // Verification documents for identity verification
     verification: {
       status: {

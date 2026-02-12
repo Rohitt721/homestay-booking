@@ -190,11 +190,12 @@ router.post(
         return res.status(400).json({ message: "User already exists" });
       }
 
-      // 1. Create User (Auth)
+      // 1. Create User (Auth) - always 'user' initially, onboarding sets final role
       user = new User({
         email: req.body.email,
         password: req.body.password,
-        role: req.body.role || "user"
+        emailVerified: true,
+        onboardingCompleted: false,
       });
 
       await user.save();
@@ -207,22 +208,6 @@ router.post(
       });
       await userProfile.save();
 
-      // 3. Create OwnerProfile if needed
-      if (user.role === "hotel_owner") {
-        const ownerProfile = new OwnerProfile({
-          userId: user._id,
-        });
-        await ownerProfile.save();
-      }
-
-      // 4. Create AdminProfile if needed
-      if (user.role === "admin") {
-        const adminProfile = new AdminProfile({
-          userId: user._id
-        });
-        await adminProfile.save();
-      }
-
       const token = jwt.sign(
         { userId: user.id },
         process.env.JWT_SECRET_KEY as string,
@@ -231,17 +216,70 @@ router.post(
         }
       );
 
-      res.cookie("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 86400000,
-        path: "/",
+      // Return token in response body so frontend can store it
+      return res.status(200).json({
+        message: "User registered OK",
+        token: token,
+        userId: user._id,
       });
-      return res.status(200).send({ message: "User registered OK" });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: "Something went wrong" });
+    }
+  }
+);
+
+// ─── POST /complete-onboarding ──────────────────────────────────────────────
+router.post(
+  "/complete-onboarding",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    const userId = req.userId;
+    const { role, heardFrom } = req.body;
+
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Set the role
+      const validRole = (role === "hotel_owner") ? "hotel_owner" : "user";
+      user.role = validRole;
+      user.onboardingCompleted = true;
+      await user.save();
+
+      // Create OwnerProfile if hotel_owner
+      if (validRole === "hotel_owner") {
+        const existingOwnerProfile = await OwnerProfile.findOne({ userId });
+        if (!existingOwnerProfile) {
+          const ownerProfile = new OwnerProfile({ userId });
+          await ownerProfile.save();
+        }
+      }
+
+      console.log(`✅ Onboarding completed for user ${userId} as ${validRole}`);
+
+      // Return combined user data
+      const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt");
+      let ownerProfile = null;
+      if (validRole === "hotel_owner") {
+        ownerProfile = await OwnerProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt");
+      }
+
+      const combinedUser = {
+        ...user.toObject(),
+        ...(userProfile ? userProfile.toObject() : {}),
+        ...(ownerProfile ? ownerProfile.toObject() : {}),
+      };
+
+      return res.status(200).json({
+        message: "Onboarding completed",
+        user: combinedUser,
+      });
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+      return res.status(500).json({ message: "Failed to complete onboarding" });
     }
   }
 );
