@@ -3,6 +3,7 @@ import multer from "multer";
 import verifyToken from "../middleware/auth";
 import Hotel from "../models/hotel";
 import Booking from "../models/booking";
+import User from "../models/user";
 
 const router = express.Router();
 
