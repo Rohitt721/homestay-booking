@@ -93,8 +93,11 @@ const MyBookings = () => {
         const checkOut = new Date(booking.checkOut);
         const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
 
-        totalSpent += hotel.pricePerNight * nights;
-        totalNights += nights;
+        // Only count active/completed bookings for stats
+        if (booking.status !== "CANCELLED" && booking.status !== "REJECTED" && booking.status !== "REFUNDED") {
+          totalSpent += hotel.pricePerNight * nights;
+          totalNights += nights;
+        }
       });
     });
 
@@ -107,11 +110,16 @@ const MyBookings = () => {
       .filter(({ booking }) => new Date(booking.checkOut) < now)
       .sort((a, b) => new Date(b.booking.checkIn).getTime() - new Date(a.booking.checkIn).getTime());
 
+    // Calculate valid bookings count
+    const validBookingsCount = allBookings.filter(
+      ({ booking }) => !["CANCELLED", "REJECTED", "REFUNDED"].includes(booking.status as string)
+    ).length;
+
     return {
       upcomingBookings: upcoming,
       pastBookings: past,
       stats: {
-        total: allBookings.length,
+        total: validBookingsCount,
         spent: totalSpent,
         hotels: hotels.length,
         nights: totalNights
