@@ -91,7 +91,7 @@ router.post(
 
       // Fetch profile data for response
       const userId = user._id;
-      const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt");
+      const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt -verification");
 
       let ownerProfile = null;
       if (user.role === "hotel_owner") {
@@ -278,7 +278,7 @@ router.post("/google-login", async (req: Request, res: Response) => {
 
     // Fetch complete profile for response
     const userId = user._id;
-    const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt");
+    const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt -verification");
 
     let ownerProfile = null;
     if (user.role === "hotel_owner") {

@@ -22,7 +22,7 @@ router.get("/me", verifyToken, async (req: Request, res: Response) => {
       return res.status(400).json({ message: "User not found" });
     }
 
-    const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt");
+    const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt -verification");
 
     let ownerProfile = null;
     if (user.role === "hotel_owner") {
@@ -261,7 +261,7 @@ router.post(
       console.log(`✅ Onboarding completed for user ${userId} as ${validRole}`);
 
       // Return combined user data
-      const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt");
+      const userProfile = await UserProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt -verification");
       let ownerProfile = null;
       if (validRole === "hotel_owner") {
         ownerProfile = await OwnerProfile.findOne({ userId }).select("-_id -userId -__v -createdAt -updatedAt");
