@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import * as apiClient from "../api-client";
 import { UserType } from "../../../shared/types";
@@ -16,7 +17,8 @@ import {
     Briefcase,
     Settings,
     ShieldAlert,
-    LogOut
+    LogOut,
+    AlertCircle
 } from "lucide-react";
 
 export type ProfileFormData = {
@@ -199,11 +201,21 @@ const Profile = () => {
                                         <p className="text-emerald-700 font-bold text-sm">Identity Verified</p>
                                         <p className="text-emerald-600/80 text-xs mt-1">You are fully verified to book authentic stays.</p>
                                     </div>
+                                ) : currentUser.verification?.status === "SUBMITTED" ? (
+                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-center">
+                                        <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2 animate-pulse" />
+                                        <p className="text-amber-700 font-bold text-sm">Pending Review</p>
+                                        <p className="text-amber-600/80 text-xs mt-1">Your documents are under review.</p>
+                                    </div>
                                 ) : (
-                                    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-center">
-                                        <ShieldAlert className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-                                        <p className="text-orange-700 font-bold text-sm">Not Verified</p>
-                                        <a href="/verify-identity" className="text-indigo-600 text-xs font-black underline mt-2 block">Complete Verification</a>
+                                    <div className={`rounded-2xl p-4 text-center border ${currentUser.verification?.status === "REJECTED" ? "bg-red-50 border-red-100" : "bg-orange-50 border-orange-100"}`}>
+                                        <ShieldAlert className={`w-8 h-8 mx-auto mb-2 ${currentUser.verification?.status === "REJECTED" ? "text-red-500" : "text-orange-500"}`} />
+                                        <p className={`${currentUser.verification?.status === "REJECTED" ? "text-red-700" : "text-orange-700"} font-bold text-sm`}>
+                                            {currentUser.verification?.status === "REJECTED" ? "Verification Rejected" : "Not Verified"}
+                                        </p>
+                                        <Link to="/verify-identity" className="text-indigo-600 text-xs font-black underline mt-2 block">
+                                            {currentUser.verification?.status === "REJECTED" ? "Try Again" : "Complete Verification"}
+                                        </Link>
                                     </div>
                                 )}
                             </div>
