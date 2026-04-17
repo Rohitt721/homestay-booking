@@ -1,5 +1,5 @@
 import mongoose, { Document } from "mongoose";
-import { ReportType } from "../../../shared/types";
+import { ReportType } from "../types";
 
 export interface IReport extends Omit<ReportType, "_id" | "createdAt" | "updatedAt">, Document {
     createdAt: Date;

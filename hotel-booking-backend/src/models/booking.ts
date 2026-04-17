@@ -1,5 +1,5 @@
 import mongoose, { Document } from "mongoose";
-import { BookingType, BookingStatus, IdType } from "../../../shared/types";
+import { BookingType, BookingStatus, IdType } from "../types";
 
 export interface IBooking extends Omit<BookingType, "_id">, Document {
   createdAt: Date;
