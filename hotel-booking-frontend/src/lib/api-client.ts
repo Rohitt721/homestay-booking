@@ -3,19 +3,19 @@ import Cookies from "js-cookie";
 
 // Define base URL based on environment
 const getBaseURL = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-
-  // Fallback URLs
+  // Check hostname first to auto-configure on Vercel/Netlify
   if (
-    window.location.hostname === "mern-booking-hotel.netlify.app" ||
-    window.location.hostname === "homestay-booking-ui.vercel.app"
+    window.location.hostname === "homestay-booking-ui.vercel.app" ||
+    window.location.hostname === "mern-booking-hotel.netlify.app"
   ) {
     return "https://homestay-booking-api.vercel.app";
   }
 
-  // Default to production
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+
+  // Default fallback to production
   return "https://homestay-booking-api.vercel.app";
 };
 
