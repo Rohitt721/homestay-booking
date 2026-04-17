@@ -64,7 +64,7 @@ const BUDGET_RANGES = {
  * Generate itinerary using Gemini AI
  */
 async function generateItineraryWithAI(input: TripPlanInput): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `
 You are a travel planning expert. Generate a detailed day-by-day travel itinerary for the following trip:
