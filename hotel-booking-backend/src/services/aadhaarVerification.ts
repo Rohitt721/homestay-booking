@@ -1,6 +1,5 @@
 import Tesseract from "tesseract.js";
 import crypto from "crypto";
-import Buffer from "buffer";
 import os from "os";
 import User from "../models/user";
 
