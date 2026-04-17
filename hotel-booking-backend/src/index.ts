@@ -115,13 +115,15 @@ const isLocalDevOrigin = (origin: string) => {
   }
 };
 
-const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, ""); // Remove trailing slash if present
+const frontendUrl = (process.env.FRONTEND_URL || "").trim().replace(/\/$/, ""); // Remove trailing slash and hidden newlines
 
 const allowedOrigins = [
   frontendUrl,
   "http://localhost:5174",
   "http://localhost:5173",
   "https://homestay-booking-frontend.vercel.app",
+  "https://frontend-hazel-nine-11.vercel.app",
+  "https://backend-alpha-flax-89.vercel.app", // Allow backend to call itself if needed
   "https://mern-booking-hotel.netlify.app",
 ].filter((origin): origin is string => Boolean(origin));
 
@@ -138,8 +140,8 @@ app.use(
         return callback(null, true);
       }
 
-      // Allow all Netlify preview URLs
-      if (origin.includes("netlify.app")) {
+      // Allow all Vercel/Netlify preview and production URLs
+      if (origin.includes("vercel.app") || origin.includes("netlify.app")) {
         return callback(null, true);
       }
 
@@ -174,8 +176,8 @@ app.options(
         return callback(null, true);
       }
 
-      // Allow all Netlify preview URLs
-      if (origin.includes("netlify.app")) {
+      // Allow all Vercel/Netlify preview and production URLs
+      if (origin.includes("vercel.app") || origin.includes("netlify.app")) {
         return callback(null, true);
       }
 
