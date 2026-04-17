@@ -8,7 +8,10 @@ const getBaseURL = () => {
   }
 
   // Fallback URLs
-  if (window.location.hostname === "mern-booking-hotel.netlify.app") {
+  if (
+    window.location.hostname === "mern-booking-hotel.netlify.app" ||
+    window.location.hostname === "homestay-booking-ui.vercel.app"
+  ) {
     return "https://homestay-booking-api.vercel.app";
   }
 
