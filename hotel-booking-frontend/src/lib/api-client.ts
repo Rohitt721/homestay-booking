@@ -6,9 +6,10 @@ const getBaseURL = () => {
   // Check hostname first to auto-configure on Vercel/Netlify
   if (
     window.location.hostname === "homestay-booking-frontend.vercel.app" ||
+    window.location.hostname === "frontend-hazel-nine-11.vercel.app" ||
     window.location.hostname === "mern-booking-hotel.netlify.app"
   ) {
-    return "https://homestay-booking-backend.vercel.app";
+    return "https://backend-alpha-flax-89.vercel.app";
   }
 
   if (import.meta.env.VITE_API_BASE_URL) {
