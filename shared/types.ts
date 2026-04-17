@@ -43,6 +43,19 @@ export type UserType = {
       name?: string;
       uploadedAt: Date;
     }[];
+    aadhaarNumber?: string;
+    selfieUrl?: string;
+    confidenceScore?: number;
+    ocrExtractedName?: string;
+    ocrExtractedNumber?: string;
+    verificationChecks?: {
+      verhoeffValid?: boolean;
+      ocrNumberMatch?: boolean;
+      ocrNameMatch?: boolean;
+      ocrKeywordsFound?: boolean;
+      duplicateCheck?: boolean;
+      imageQuality?: boolean;
+    };
     rejectionReason?: string;
   };
 };

@@ -365,6 +365,18 @@ const VerificationsSection = () => {
 
     const selectedUser = verifications?.find((u: any) => u._id === selectedUserId);
 
+    const getScoreColor = (score: number) => {
+        if (score >= 80) return "from-emerald-400 to-green-500";
+        if (score >= 40) return "from-amber-400 to-orange-500";
+        return "from-red-400 to-rose-500";
+    };
+
+    const getScoreTextColor = (score: number) => {
+        if (score >= 80) return "text-emerald-400";
+        if (score >= 40) return "text-amber-400";
+        return "text-red-400";
+    };
+
     if (isError) {
         return (
             <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
@@ -390,7 +402,7 @@ const VerificationsSection = () => {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[700px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{height: "calc(100vh - 280px)", minHeight: "600px"}}>
             {/* Sidebar */}
             <div className="lg:col-span-1 border border-white/10 rounded-3xl bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
                 <div className="p-5 border-b border-white/10 bg-white/5 flex items-center justify-between">
@@ -398,107 +410,282 @@ const VerificationsSection = () => {
                     <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 font-black border border-blue-500/30">{verifications.length}</Badge>
                 </div>
                 <div className="flex-1 overflow-y-auto divide-y divide-white/5">
-                    {verifications.map((user: any) => (
-                        <button
-                            key={user._id}
-                            onClick={() => setSelectedUserId(user._id)}
-                            className={`w-full p-5 text-left transition-all hover:bg-white/10 flex items-center justify-between group ${selectedUserId === user._id ? "bg-blue-500/20 ring-2 ring-blue-500/50 ring-inset backdrop-blur-sm" : ""}`}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/50">
-                                    {user.firstName?.[0] || "?"}{user.lastName?.[0] || "?"}
+                    {verifications.map((user: any) => {
+                        const score = user.verification?.confidenceScore;
+                        return (
+                            <button
+                                key={user._id}
+                                onClick={() => setSelectedUserId(user._id)}
+                                className={`w-full p-5 text-left transition-all hover:bg-white/10 flex items-center justify-between group ${selectedUserId === user._id ? "bg-blue-500/20 ring-2 ring-blue-500/50 ring-inset backdrop-blur-sm" : ""}`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/50">
+                                        {user.firstName?.[0] || "?"}{user.lastName?.[0] || "?"}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h4 className="font-bold text-white truncate">{user.firstName} {user.lastName}</h4>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                                            {score !== undefined && (
+                                                <span className={`text-[10px] font-black ${getScoreTextColor(score)}`}>
+                                                    {score}%
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="min-w-0">
-                                    <h4 className="font-bold text-white truncate">{user.firstName} {user.lastName}</h4>
-                                    <p className="text-xs text-gray-400 truncate">{user.email}</p>
-                                </div>
-                            </div>
-                            <ChevronRight className={`h-5 w-5 text-gray-500 transition-all ${selectedUserId === user._id ? "translate-x-1 text-blue-400" : "group-hover:translate-x-1"}`} />
-                        </button>
-                    ))}
+                                <ChevronRight className={`h-5 w-5 text-gray-500 transition-all ${selectedUserId === user._id ? "translate-x-1 text-blue-400" : "group-hover:translate-x-1"}`} />
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
             {/* Detail View */}
-            <div className="lg:col-span-2 h-full">
+            <div className="lg:col-span-2 h-full min-w-0 overflow-hidden">
                 {selectedUser ? (
                     <Card className="h-full border border-blue-500/30 bg-white/5 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden rounded-3xl">
                         <CardHeader className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-b border-white/10 p-6 backdrop-blur-sm">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <Badge className="mb-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/50">VERIFICATION REQUEST</Badge>
+                                    <Badge className="mb-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/50">SMART VERIFICATION</Badge>
                                     <CardTitle className="text-2xl font-black text-white">{selectedUser.firstName} {selectedUser.lastName}</CardTitle>
-                                    <p className="text-sm text-gray-400 mt-1 font-medium">{selectedUser.email} • ID Verification</p>
+                                    <p className="text-sm text-gray-400 mt-1 font-medium">{selectedUser.email}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Submitted On</p>
-                                    <p className="text-sm font-bold text-white">{new Date(selectedUser.verification?.documents?.[0]?.uploadedAt || Date.now()).toLocaleDateString()}</p>
+                                    {selectedUser.verification?.aadhaarNumber && (
+                                        <div className="mb-2">
+                                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Aadhaar</p>
+                                            <p className="text-sm font-mono font-bold text-white">{selectedUser.verification.aadhaarNumber}</p>
+                                        </div>
+                                    )}
+                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Submitted</p>
+                                    <p className="text-xs font-bold text-white">{new Date(selectedUser.verification?.documents?.[0]?.uploadedAt || Date.now()).toLocaleDateString()}</p>
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="flex-1 overflow-y-auto p-8 space-y-10">
-                            {/* Document Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {selectedUser.verification?.documents?.map((doc: any, index: number) => (
-                                    <div key={index} className="space-y-4">
-                                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                            <ShieldAlert className="w-4 h-4 text-blue-400" />
-                                            {index === 0 ? "1. ID Front" : "2. ID Back"}
-                                        </p>
-                                        <div className="relative group aspect-video rounded-2xl border-2 border-white/10 overflow-hidden bg-black/20 backdrop-blur-sm shadow-xl">
-                                            <img
-                                                src={doc.url}
-                                                className="w-full h-full object-contain transition-all duration-700 group-hover:scale-110"
-                                                alt="Verification Document"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all flex flex-col justify-end p-6">
-                                                <p className="text-white text-xs font-bold mb-2 uppercase tracking-widest">{doc.name || "Verification Image"}</p>
-                                                <a
-                                                    href={doc.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="w-full py-3 bg-white text-black rounded-xl font-black text-center text-sm shadow-xl flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
-                                                >
-                                                    <ExternalLink className="w-4 h-4" /> VIEW FULL SCREEN
-                                                </a>
+                        <CardContent className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
+                            {/* AI Confidence Score */}
+                            {selectedUser.verification?.confidenceScore !== undefined && (
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4 text-blue-400" />
+                                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">AI Confidence Score</span>
+                                        </div>
+                                        <span className={`text-xl font-black ${getScoreTextColor(selectedUser.verification.confidenceScore)}`}>
+                                            {selectedUser.verification.confidenceScore}%
+                                        </span>
+                                    </div>
+                                    <div className="relative w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full bg-gradient-to-r ${getScoreColor(selectedUser.verification.confidenceScore)} transition-all duration-1000`}
+                                            style={{ width: `${selectedUser.verification.confidenceScore}%` }}
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 mt-1.5 text-right">Score is advisory — you make the final call</p>
+                                </div>
+                            )}
+
+                            {/* ===== RICH COMPARISON CHECKS ===== */}
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Detailed Verification Analysis</p>
+
+                                {/* 1. Verhoeff Checksum */}
+                                {(() => {
+                                    const passed = selectedUser.verification?.verificationChecks?.verhoeffValid;
+                                    return (
+                                        <div className={`rounded-xl border p-3 ${passed ? "bg-emerald-500/10 border-emerald-500/20" : "bg-red-500/10 border-red-500/20"}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+                                                <span className="text-xs font-black text-gray-300 uppercase tracking-wider">Aadhaar Checksum (Verhoeff Algorithm)</span>
+                                                <span className={`ml-auto text-[10px] font-black px-2 py-0.5 rounded-full ${passed ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{passed ? "PASS" : "FAIL"}</span>
                                             </div>
+                                            <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                                                <div className="bg-black/20 rounded-lg p-2">
+                                                    <p className="text-gray-500 text-[10px] uppercase mb-0.5">Aadhaar Number (Stored)</p>
+                                                    <p className="font-mono font-bold text-white">{selectedUser.verification?.aadhaarNumber || "—"}</p>
+                                                </div>
+                                                <div className="bg-black/20 rounded-lg p-2">
+                                                    <p className="text-gray-500 text-[10px] uppercase mb-0.5">Checksum Valid</p>
+                                                    <p className={`font-bold ${passed ? "text-emerald-400" : "text-red-400"}`}>{passed ? "✓ Structurally valid Aadhaar number" : "✗ Failed UIDAI checksum — may be invalid"}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* 2. OCR Number Match */}
+                                {(() => {
+                                    const passed = selectedUser.verification?.verificationChecks?.ocrNumberMatch;
+                                    const ocrNum = (selectedUser.verification as any)?.ocrExtractedNumber;
+                                    const enteredNum = selectedUser.verification?.aadhaarNumber;
+                                    return (
+                                        <div className={`rounded-xl border p-3 ${passed ? "bg-emerald-500/10 border-emerald-500/20" : "bg-red-500/10 border-red-500/20"}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+                                                <span className="text-xs font-black text-gray-300 uppercase tracking-wider">Aadhaar Number — OCR vs Entered</span>
+                                                <span className={`ml-auto text-[10px] font-black px-2 py-0.5 rounded-full ${passed ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{passed ? "MATCH" : "MISMATCH"}</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                                                <div className="bg-black/20 rounded-lg p-2">
+                                                    <p className="text-gray-500 text-[10px] uppercase mb-0.5">Entered by User</p>
+                                                    <p className="font-mono font-bold text-white">{enteredNum || "—"}</p>
+                                                </div>
+                                                <div className={`rounded-lg p-2 ${passed ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
+                                                    <p className="text-gray-500 text-[10px] uppercase mb-0.5">Read by OCR from Card</p>
+                                                    <p className={`font-mono font-bold ${passed ? "text-emerald-400" : "text-red-400"}`}>{ocrNum || "Could not extract"}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* 3. Name Match */}
+                                {(() => {
+                                    const passed = selectedUser.verification?.verificationChecks?.ocrNameMatch;
+                                    const ocrName = (selectedUser.verification as any)?.ocrExtractedName;
+                                    const profileName = `${selectedUser.firstName} ${selectedUser.lastName}`;
+                                    return (
+                                        <div className={`rounded-xl border p-3 ${passed ? "bg-emerald-500/10 border-emerald-500/20" : "bg-red-500/10 border-red-500/20"}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+                                                <span className="text-xs font-black text-gray-300 uppercase tracking-wider">Name — Aadhaar Card vs User Profile</span>
+                                                <span className={`ml-auto text-[10px] font-black px-2 py-0.5 rounded-full ${passed ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{passed ? "MATCH" : "MISMATCH"}</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                                                <div className="bg-black/20 rounded-lg p-2">
+                                                    <p className="text-gray-500 text-[10px] uppercase mb-0.5">Profile Name</p>
+                                                    <p className="font-bold text-white">{profileName}</p>
+                                                </div>
+                                                <div className={`rounded-lg p-2 ${passed ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
+                                                    <p className="text-gray-500 text-[10px] uppercase mb-0.5">Name on Aadhaar (OCR)</p>
+                                                    <p className={`font-bold ${passed ? "text-emerald-400" : "text-red-400"}`}>{ocrName || "Could not extract"}</p>
+                                                </div>
+                                            </div>
+                                            {!passed && ocrName && (
+                                                <p className="text-[10px] text-amber-400 mt-2 font-medium">⚠ Names differ — check if this is a spelling variation or a genuine mismatch</p>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* 4. Document Authenticity */}
+                                {(() => {
+                                    const passed = selectedUser.verification?.verificationChecks?.ocrKeywordsFound;
+                                    return (
+                                        <div className={`rounded-xl border p-3 ${passed ? "bg-emerald-500/10 border-emerald-500/20" : "bg-red-500/10 border-red-500/20"}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+                                                <span className="text-xs font-black text-gray-300 uppercase tracking-wider">Document Authenticity (Keywords)</span>
+                                                <span className={`ml-auto text-[10px] font-black px-2 py-0.5 rounded-full ${passed ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{passed ? "CONFIRMED" : "NOT FOUND"}</span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-500 mt-1.5 leading-relaxed">
+                                                {passed
+                                                    ? "✓ OCR detected Aadhaar-specific text: \"Government of India\", \"UIDAI\", or \"आधार\""
+                                                    : "✗ Could not detect Aadhaar-specific keywords — document may not be a valid Aadhaar card"}
+                                            </p>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* 5. Duplicate Check */}
+                                {(() => {
+                                    const passed = selectedUser.verification?.verificationChecks?.duplicateCheck;
+                                    return (
+                                        <div className={`rounded-xl border p-3 ${passed ? "bg-emerald-500/10 border-emerald-500/20" : "bg-red-500/10 border-red-500/20"}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+                                                <span className="text-xs font-black text-gray-300 uppercase tracking-wider">Duplicate Aadhaar Detection</span>
+                                                <span className={`ml-auto text-[10px] font-black px-2 py-0.5 rounded-full ${passed ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{passed ? "UNIQUE" : "DUPLICATE FOUND"}</span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-500 mt-1.5">
+                                                {passed
+                                                    ? "✓ No other verified account uses this Aadhaar number"
+                                                    : "✗ This Aadhaar number is already registered with another account — possible fraud"}
+                                            </p>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* 6. Image Quality */}
+                                {(() => {
+                                    const passed = selectedUser.verification?.verificationChecks?.imageQuality;
+                                    return (
+                                        <div className={`rounded-xl border p-3 ${passed ? "bg-emerald-500/10 border-emerald-500/20" : "bg-red-500/10 border-red-500/20"}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+                                                <span className="text-xs font-black text-gray-300 uppercase tracking-wider">Image Quality</span>
+                                                <span className={`ml-auto text-[10px] font-black px-2 py-0.5 rounded-full ${passed ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{passed ? "GOOD" : "POOR"}</span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-500 mt-1.5">
+                                                {passed
+                                                    ? "✓ Image meets minimum quality requirements (10KB–5MB, valid JPEG/PNG)"
+                                                    : "✗ Image is too small, too large, or an unsupported format — request resubmission"}
+                                            </p>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+
+                            {/* Photo Strip: Selfie + Aadhaar Front + Back */}
+                            <div className="grid grid-cols-3 gap-2">
+                                {selectedUser.verification?.selfieUrl && (
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                            <ImageIcon className="w-3 h-3 text-blue-400" /> Selfie
+                                        </p>
+                                        <div className="relative group h-32 rounded-xl border-2 border-blue-500/30 overflow-hidden bg-black/20">
+                                            <img src={selectedUser.verification.selfieUrl} className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" alt="Selfie" />
+                                            <a href={selectedUser.verification.selfieUrl} target="_blank" rel="noopener noreferrer"
+                                                className="absolute inset-0 flex items-end justify-center p-1.5 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-black/80 to-transparent transition-all">
+                                                <span className="w-full py-1 bg-white text-black rounded-lg font-black text-center text-[9px] flex items-center justify-center gap-0.5">
+                                                    <ExternalLink className="w-2 h-2" /> FULL VIEW
+                                                </span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+                                {selectedUser.verification?.documents?.map((doc: any, index: number) => (
+                                    <div key={index} className="space-y-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                            <ShieldAlert className="w-3 h-3 text-blue-400" />
+                                            {doc.documentType || (index === 0 ? "Front" : "Back")}
+                                        </p>
+                                        <div className="relative group h-32 rounded-xl border-2 border-white/10 overflow-hidden bg-black/20">
+                                            <img src={doc.url} className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" alt={doc.documentType} />
+                                            <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                                                className="absolute inset-0 flex items-end justify-center p-1.5 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-black/80 to-transparent transition-all">
+                                                <span className="w-full py-1 bg-white text-black rounded-lg font-black text-center text-[9px] flex items-center justify-center gap-0.5">
+                                                    <ExternalLink className="w-2 h-2" /> FULL VIEW
+                                                </span>
+                                            </a>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 flex items-start gap-4 backdrop-blur-sm">
-                                <AlertTriangle className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
-                                <div>
-                                    <h4 className="text-sm font-black text-amber-300 uppercase tracking-wider mb-1">Reviewing Guidelines</h4>
-                                    <p className="text-xs text-amber-200/80 leading-relaxed font-medium">
-                                        Cross-verify the name on the ID with the user's profile name (<span className="font-black underline text-amber-100">{selectedUser.firstName} {selectedUser.lastName}</span>).
-                                        Ensure the documents are clear, valid, and match the user's identity.
-                                    </p>
-                                </div>
-                            </div>
-
                             {/* Decision Area */}
-                            <div className="grid grid-cols-2 gap-6 pt-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <Button
                                     variant="outline"
-                                    className="h-16 rounded-2xl border-2 border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500 font-black text-lg transition-all active:scale-[0.98] backdrop-blur-sm"
+                                    className="h-14 rounded-2xl border-2 border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500 font-black text-base transition-all active:scale-[0.98] backdrop-blur-sm"
                                     onClick={() => {
-                                        const reason = prompt("Enter rejection reason (e.g. Documents not clear, Name mismatch):");
+                                        const reason = prompt("Enter rejection reason (e.g. Name mismatch, Document not clear):");
                                         if (reason) updateStatus({ userId: selectedUser._id, status: "REJECTED", reason });
                                     }}
                                     disabled={isLoading}
                                 >
-                                    <XCircle className="w-6 h-6 mr-3" />
-                                    REJECT REQUEST
+                                    <XCircle className="w-5 h-5 mr-2" />
+                                    REJECT
                                 </Button>
                                 <Button
-                                    className="h-16 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black text-lg shadow-xl shadow-green-500/30 transition-all active:scale-[0.98]"
+                                    className="h-14 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black text-base shadow-xl shadow-green-500/30 transition-all active:scale-[0.98]"
                                     onClick={() => updateStatus({ userId: selectedUser._id, status: "VERIFIED" })}
                                     disabled={isLoading}
                                 >
-                                    <CheckCircle className="w-6 h-6 mr-3" />
-                                    APPROVE ACCOUNT
+                                    <CheckCircle className="w-5 h-5 mr-2" />
+                                    APPROVE
                                 </Button>
                             </div>
                         </CardContent>
@@ -508,8 +695,8 @@ const VerificationsSection = () => {
                         <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-8 rounded-full backdrop-blur-sm mb-6 border border-blue-500/30">
                             <ShieldCheck className="h-20 w-20 text-blue-400" />
                         </div>
-                        <h3 className="text-2xl font-black text-gray-300 uppercase tracking-widest">Select an Owner to Review</h3>
-                        <p className="text-sm mt-2 font-medium italic text-gray-500">Pending verification requests will appear here</p>
+                        <h3 className="text-2xl font-black text-gray-300 uppercase tracking-widest">Select a User to Review</h3>
+                        <p className="text-sm mt-2 font-medium italic text-gray-500">All submitted verifications await your review here</p>
                     </div>
                 )}
             </div>

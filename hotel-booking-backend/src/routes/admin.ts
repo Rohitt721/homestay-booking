@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import verifyToken from "../middleware/auth";
 import { verifyAdmin } from "../middleware/adminAuth";
 import User from "../models/user";
+import UserProfile from "../models/userProfile";
 import Hotel from "../models/hotel";
 import Subscription from "../models/subscription";
 
@@ -55,11 +56,29 @@ router.get("/hotels", verifyToken, verifyAdmin, async (req: Request, res: Respon
     }
 });
 
-// Get Pending Verifications
+// Get Pending Verifications (with name from UserProfile)
 router.get("/verifications", verifyToken, verifyAdmin, async (req: Request, res: Response) => {
     try {
-        const users = await User.find({ "verification.status": "SUBMITTED" }, "-password");
-        res.json(users);
+        const users = await User.find({ "verification.status": "SUBMITTED" }, "-password").lean();
+
+        // Fetch profiles for all users in parallel and merge firstName/lastName
+        const userIds = users.map((u: any) => u._id);
+        const profiles = await UserProfile.find({ userId: { $in: userIds } }).lean();
+        const profileMap: Record<string, any> = {};
+        profiles.forEach((p: any) => {
+            profileMap[p.userId.toString()] = p;
+        });
+
+        const enriched = users.map((u: any) => {
+            const profile = profileMap[u._id.toString()];
+            return {
+                ...u,
+                firstName: profile?.firstName || "",
+                lastName: profile?.lastName || "",
+            };
+        });
+
+        res.json(enriched);
     } catch (error) {
         res.status(500).json({ message: "Error fetching verifications" });
     }

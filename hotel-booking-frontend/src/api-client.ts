@@ -347,7 +347,19 @@ export const fetchVerificationStatus = async () => {
 };
 
 export const uploadVerificationDocuments = async (formData: FormData) => {
-  const response = await axiosInstance.post("/api/verification/upload", formData);
+  const response = await axiosInstance.post("/api/verification/upload", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    timeout: 120000, // 2 min timeout for OCR processing
+  });
+  return response.data;
+};
+
+export const validateAadhaarNumber = async (aadhaarNumber: string) => {
+  const response = await axiosInstance.post("/api/verification/validate-aadhaar", {
+    aadhaarNumber,
+  });
   return response.data;
 };
 
