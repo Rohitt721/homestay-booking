@@ -53,7 +53,12 @@ const Welcome = () => {
                 type: "SUCCESS",
             });
 
-            navigate("/");
+            // Redirect hotel owners to their dashboard, regular users to home
+            if (selectedRole === "hotel_owner") {
+                navigate("/my-hotels");
+            } else {
+                navigate("/");
+            }
         } catch (error: any) {
             showToast({
                 title: "Something went wrong",
