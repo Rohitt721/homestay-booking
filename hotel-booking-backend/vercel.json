@@ -11,7 +11,7 @@
   ],
   "env": {
     "MONGODB_CONNECTION_STRING": "mongodb+srv://rohit:1234@cluster0.9b0jpzr.mongodb.net/?appName=Cluster0",
-    "FRONTEND_URL": "https://homestay-booking-ui.vercel.app",
+    "FRONTEND_URL": "https://homestay-booking-frontend.vercel.app",
     "NODE_ENV": "production",
     "JWT_SECRET_KEY": "8e5aa46e1160fc748b1a862cd4fdb926f767f2bdea11f8ef93e"
   },

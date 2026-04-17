@@ -121,7 +121,7 @@ const allowedOrigins = [
   frontendUrl,
   "http://localhost:5174",
   "http://localhost:5173",
-  "https://homestay-booking-ui.vercel.app",
+  "https://homestay-booking-frontend.vercel.app",
   "https://mern-booking-hotel.netlify.app",
 ].filter((origin): origin is string => Boolean(origin));
 

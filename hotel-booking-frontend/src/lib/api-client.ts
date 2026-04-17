@@ -5,10 +5,10 @@ import Cookies from "js-cookie";
 const getBaseURL = () => {
   // Check hostname first to auto-configure on Vercel/Netlify
   if (
-    window.location.hostname === "homestay-booking-ui.vercel.app" ||
+    window.location.hostname === "homestay-booking-frontend.vercel.app" ||
     window.location.hostname === "mern-booking-hotel.netlify.app"
   ) {
-    return "https://homestay-booking-api.vercel.app";
+    return "https://homestay-booking-backend.vercel.app";
   }
 
   if (import.meta.env.VITE_API_BASE_URL) {
@@ -16,7 +16,7 @@ const getBaseURL = () => {
   }
 
   // Default fallback to production
-  return "https://homestay-booking-api.vercel.app";
+  return "https://homestay-booking-backend.vercel.app";
 };
 
 // Extend axios config to include metadata
