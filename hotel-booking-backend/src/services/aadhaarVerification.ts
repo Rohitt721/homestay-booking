@@ -1,5 +1,7 @@
 import Tesseract from "tesseract.js";
 import crypto from "crypto";
+import Buffer from "buffer";
+import os from "os";
 import User from "../models/user";
 
 // ==========================================
@@ -71,6 +73,7 @@ export async function extractTextFromImage(
     const {
       data: { text },
     } = await Tesseract.recognize(imageBuffer, "eng", {
+      cachePath: os.tmpdir(), // Use writable /tmp directory for serverless environments like Vercel
       logger: (m) => {
         if (m.status === "recognizing text") {
           console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
