@@ -2,8 +2,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import Hotel from "../models/hotel";
 import Booking from "../models/booking";
 
-// Initialize Gemini (user needs to add GEMINI_API_KEY to .env)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// GoogleGenerativeAI will be initialized dynamically
+// to ensure process.env is fully loaded and overridden by dotenv
 
 export interface TripPlanInput {
     destination: string;
@@ -64,6 +64,7 @@ const BUDGET_RANGES = {
  * Generate itinerary using Gemini AI
  */
 async function generateItineraryWithAI(input: TripPlanInput): Promise<any> {
+    const genAI = new GoogleGenerativeAI((process.env.GEMINI_API_KEY || "").trim());
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `
@@ -93,7 +94,8 @@ Return the response in this exact JSON format:
           "time": "9:00 AM",
           "activity": "Activity name",
           "location": "Specific location name",
-          "description": "Brief description"
+          "description": "Brief description",
+          "coordinates": { "lat": 12.345, "lng": 56.789 }
         }
       ]
     }

@@ -461,6 +461,15 @@ export interface DayActivity {
   activity: string;
   location: string;
   description: string;
+  coordinates?: { lat: number; lng: number };
+}
+
+export interface SavedTrip {
+  _id: string;
+  name: string;
+  destination: string;
+  planData: TripPlan;
+  createdAt: string;
 }
 
 export interface HotelRecommendation {
@@ -544,5 +553,26 @@ export const completeOnboarding = async (role: "user" | "hotel_owner", heardFrom
     role,
     heardFrom,
   });
+  return response.data;
+};
+
+export const saveTripPlan = async (tripData: {
+  name: string;
+  destination: string;
+  planData: TripPlan;
+}) => {
+  const response = await axiosInstance.post(`/api/trip-planner/save`, tripData);
+  return response.data;
+};
+
+export const getMyTrips = async (): Promise<SavedTrip[]> => {
+  const response = await axiosInstance.get(`/api/trip-planner/my-trips`);
+  return response.data;
+};
+
+export const deleteTrip = async (tripId: string) => {
+  const response = await axiosInstance.delete(
+    `/api/trip-planner/my-trips/${tripId}`
+  );
   return response.data;
 };

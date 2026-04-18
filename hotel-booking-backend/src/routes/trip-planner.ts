@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import verifyToken from "../middleware/auth";
 import { generateTripPlan, findAlternateHotels, TripPlanInput } from "../services/trip-planner";
 import { body, validationResult } from "express-validator";
+import SavedTrip from "../models/savedTrip";
 
 const router = express.Router();
 
@@ -170,6 +171,77 @@ router.get("/budget-options", (_req: Request, res: Response) => {
     ];
 
     res.json(options);
+});
+
+/**
+ * POST /api/trip-planner/save
+ * Save a generated trip plan to the user's profile
+ */
+router.post(
+    "/save",
+    verifyToken,
+    [
+        body("name").notEmpty().withMessage("Trip name is required"),
+        body("destination").notEmpty().withMessage("Destination is required"),
+        body("planData").notEmpty().withMessage("Plan data is required"),
+    ],
+    async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        try {
+            const newTrip = new SavedTrip({
+                userId: req.userId,
+                name: req.body.name,
+                destination: req.body.destination,
+                planData: req.body.planData,
+            });
+
+            await newTrip.save();
+            res.status(201).json(newTrip);
+        } catch (error: any) {
+            console.error("Error saving trip:", error);
+            res.status(500).json({ message: "Error saving trip plan" });
+        }
+    }
+);
+
+/**
+ * GET /api/trip-planner/my-trips
+ * Get all saved trips for the authenticated user
+ */
+router.get("/my-trips", verifyToken, async (req: Request, res: Response) => {
+    try {
+        const trips = await SavedTrip.find({ userId: req.userId }).sort({ createdAt: -1 });
+        res.json(trips);
+    } catch (error) {
+        console.error("Error fetching trips:", error);
+        res.status(500).json({ message: "Error fetching saved trips" });
+    }
+});
+
+/**
+ * DELETE /api/trip-planner/my-trips/:id
+ * Delete a saved trip
+ */
+router.delete("/my-trips/:id", verifyToken, async (req: Request, res: Response) => {
+    try {
+        const trip = await SavedTrip.findOneAndDelete({
+            _id: req.params.id,
+            userId: req.userId,
+        });
+
+        if (!trip) {
+            return res.status(404).json({ message: "Trip not found" });
+        }
+
+        res.json({ message: "Trip deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting trip:", error);
+        res.status(500).json({ message: "Error deleting trip plan" });
+    }
 });
 
 export default router;
