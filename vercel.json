@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "hotel-booking-backend/api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["hotel-booking-backend/src/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "hotel-booking-backend/api/index.ts"
+    }
+  ]
+}
