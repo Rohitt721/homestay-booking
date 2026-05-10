@@ -29,12 +29,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
-import { runAutomatedBookingChecks } from "./services/booking-automation";
-
-// Run automated checks every hour
-setInterval(runAutomatedBookingChecks, 60 * 60 * 1000);
-// Also run once on startup after 10s delay
-setTimeout(runAutomatedBookingChecks, 10000);
+// NOTE: booking-automation is NOT imported here for Vercel serverless.
+// Scheduled jobs should be triggered via a separate Vercel Cron Job or
+// an external scheduler (e.g., cron-job.org hitting /api/health endpoint).
 
 // Environment Variables Validation
 const requiredEnvVars = [
@@ -48,9 +45,11 @@ const requiredEnvVars = [
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
+  // IMPORTANT: Do NOT call process.exit() in serverless — it kills the entire function.
+  // Instead, log the warning and let individual route handlers fail gracefully.
   console.error("❌ Missing required environment variables:");
   missingEnvVars.forEach((envVar) => console.error(`   - ${envVar}`));
-  process.exit(1);
+  console.error("⚠️  Server may not function correctly without these variables.");
 }
 
 console.log("✅ All required environment variables are present");
@@ -67,8 +66,9 @@ console.log("☁️  Cloudinary configured successfully");
 
 import { connectDB } from "./db";
 
-// Connect to database
-connectDB();
+// NOTE: connectDB() is NOT called at module scope for Vercel serverless.
+// It is called per-request in api/index.ts (with connection reuse via isConnected flag).
+// For local development it is called inside the app.listen block below.
 
 const app = express();
 
@@ -246,54 +246,60 @@ app.use(
 const PORT = process.env.PORT || 7002;
 
 if (process.env.VERCEL !== "1") {
-  const server = app.listen(PORT, () => {
-    console.log("🚀 ============================================");
-    console.log(`✅ Server running on port ${PORT}`);
-    console.log(`🌐 Local: http://localhost:${PORT}`);
-    console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
-    console.log(`💚 Health Check: http://localhost:${PORT}/api/health`);
-    console.log("🚀 ============================================");
-  });
-
-  // Graceful Shutdown Handler
-  const gracefulShutdown = (signal: string) => {
-    console.log(`\n⚠️  ${signal} received. Starting graceful shutdown...`);
-
-    server.close(async () => {
-      console.log("🔒 HTTP server closed");
-
-      try {
-        await mongoose.connection.close();
-        console.log("🔒 MongoDB connection closed");
-        console.log("✅ Graceful shutdown completed");
-        process.exit(0);
-      } catch (error) {
-        console.error("❌ Error during shutdown:", error);
-        process.exit(1);
-      }
+  // Connect to DB then start listening (local development / non-serverless)
+  connectDB().then(() => {
+    const server = app.listen(PORT, () => {
+      console.log("🚀 ============================================");
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌐 Local: http://localhost:${PORT}`);
+      console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
+      console.log(`💚 Health Check: http://localhost:${PORT}/api/health`);
+      console.log("🚀 ============================================");
     });
 
-    // Force shutdown after 30 seconds
-    setTimeout(() => {
-      console.error("⚠️  Forced shutdown after timeout");
-      process.exit(1);
-    }, 30000);
-  };
+    // Graceful Shutdown Handler
+    const gracefulShutdown = (signal: string) => {
+      console.log(`\n⚠️  ${signal} received. Starting graceful shutdown...`);
 
-  // Handle shutdown signals
-  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+      server.close(async () => {
+        console.log("🔒 HTTP server closed");
 
-  // Handle uncaught exceptions
-  process.on("uncaughtException", (error) => {
-    console.error("❌ Uncaught Exception:", error);
-    gracefulShutdown("UNCAUGHT_EXCEPTION");
-  });
+        try {
+          await mongoose.connection.close();
+          console.log("🔒 MongoDB connection closed");
+          console.log("✅ Graceful shutdown completed");
+          process.exit(0);
+        } catch (error) {
+          console.error("❌ Error during shutdown:", error);
+          process.exit(1);
+        }
+      });
 
-  // Handle unhandled promise rejections
-  process.on("unhandledRejection", (reason, promise) => {
-    console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
-    gracefulShutdown("UNHANDLED_REJECTION");
+      // Force shutdown after 30 seconds
+      setTimeout(() => {
+        console.error("⚠️  Forced shutdown after timeout");
+        process.exit(1);
+      }, 30000);
+    };
+
+    // Handle shutdown signals
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+    // Handle uncaught exceptions
+    process.on("uncaughtException", (error) => {
+      console.error("❌ Uncaught Exception:", error);
+      gracefulShutdown("UNCAUGHT_EXCEPTION");
+    });
+
+    // Handle unhandled promise rejections
+    process.on("unhandledRejection", (reason, promise) => {
+      console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+      gracefulShutdown("UNHANDLED_REJECTION");
+    });
+  }).catch((error) => {
+    console.error("❌ Failed to connect to database, server not started:", error);
+    process.exit(1);
   });
 }
 
